@@ -1,8 +1,33 @@
-DemoApp
+DemoApp (Work-In-Progress)
 ==================================================================================================
 
 This project is a collection of good practices I've have learned over the years and also serves
 as a place I can lookup how to do things I've often done before.
+
+
+## Building this project
+
+### Pre-requisites
+
+* Maven - version 3.8 was used to develop this, it may or may not work with older versions.
+* Java JDK 17 - [Eclipse Temurin 17](https://adoptium.net/?variant=openjdk17&jvmVariant=hotspot) from Adoptium was used to develop this project.
+* Docker + Docker-Compose - Docker version 20.10.12 and docker-compose version 1.29.2 was used to develop this project.
+
+### Build with maven
+
+A simple
+```bash
+mvn clean install
+```
+is all that is needed to build all the modules in the project.
+
+It may also be advantages to pre-download sources for dependencies in advance so they are already
+downloaded when your IDE needs them.
+```bash
+mvn clean install dependency:sources
+```
+
+For running it locally please refer to the section below named [Running this project / runLocal.sh](https://github.com/BlueWizardHat/demo-kotlin-maven#running-this-project--runlocalsh).
 
 
 ## Good practices
