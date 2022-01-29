@@ -12,6 +12,8 @@ as a place I can lookup how to do things I've often done before.
 * Maven - version 3.8 was used to develop this, it may or may not work with older versions.
 * Java JDK 17 - [Eclipse Temurin 17](https://adoptium.net/?variant=openjdk17&jvmVariant=hotspot) from Adoptium was used to develop this project.
 * Docker + Docker-Compose - Docker version 20.10.12 and docker-compose version 1.29.2 was used to develop this project.
+* Bash - version 5+ - Most scripts in this project are Bash scripts - Linux and Mac should have that already installed, but if you are on windows you might need to install.
+
 
 ### Build with maven
 
@@ -19,7 +21,7 @@ A simple
 ```bash
 mvn clean install
 ```
-is all that is needed to build all the modules in the project.
+is all that is needed to build all the services and modules in the project.
 
 It may also be advantages to pre-download sources for dependencies in advance so they are already
 downloaded when your IDE needs them.
@@ -52,6 +54,9 @@ Gives ```net.bluewizardhat.demoapp.account```
 * [.gitattributes](https://git-scm.com/docs/gitattributes) - Tells git which line endings are used among other things - especially important if not all developers on your project use the same system/OS.
 * [.editorconfig](https://editorconfig.org/) - Tells the editor/IDE you are using which line endings are used, which encoding to use, how to indent and other things - Many editors and IDEs now support ```.editorconfig``` out of the box and some support it with addons and even using an editor that does not support it ```.editorconfig``` can still serve as documentation to developers what is expected in the project.
 
+Other files:
+
+* [lombok.config](https://projectlombok.org/) - If you use lombok (and if you use Java you should use lombok) always include ```lombok.config``` - even if it's just to specify ```config.stopBubbling = true``` - The same applies for any other tool that reads config files during build, make sure to configure them to not read any config files further out than the root of your project.
 
 ### Generate source jars
 
@@ -101,16 +106,17 @@ database functionality in one module, REST services in another, etc.
 Each module should have the minimum dependencies it needs.
 
 This can sometimes take a little extra effort to set up with dependencies between modules, but it pays of
-in the end by having a much more organized project and is also easier to bring other developers up to speed
-if working together in a team.
+in the end by having a much more organized and clean project and can also help prevent making cyclic
+dependencies between packages. And as an added bonus it also makes it easier to bring other
+developers up to speed if you need to bring in new developer on the project.
 
-Your Spring Boot app can collect all the modules at compile time.
+Your Spring Boot app or shadow jar tool can collect all the modules at compile time.
 
 
 ### Have a template project that can be easily cloned and adapted
 
-Having a template project that is fully functional out of the box means it is easier to create new services
-as you don't need to go through the same set up process all the time.
+Having a template project that is fully functional out-of-the box means it is easier to create new services
+as you don't need to go through the same setup process all the time.
 
 Your template project should be set up the way your project or organization prefers to set up projects and
 include examples of the functionality that is most often used in your project/organization. If all your
@@ -119,12 +125,19 @@ But also don't include every functionality under the sun, the template is a star
 of projects.
 
 
+### Script as much as possible / Automate all the things
+
+Don't have a bunch of manual steps if a script can take care of it. Manual processes will often fail
+since humans aren't perfect. If you can script it do it. It is also usually faster to let the computer
+do the work than to do it manually.
+
+
 ### Have a root-POM / super-POM that configures all your most used plugins
 
 It just simplifies things to not have every project repeat the same configuration.
 
 
-### Documentation
+### Document as much as possible in the source code
 
 Write a little javadoc for every public class and method unless it's obvious. Doesn't have to be much, as
 long as it gives the reader an idea of what it does and/or it's intended purpose. Makes it much easier for
@@ -137,9 +150,17 @@ maintained, but it is also more likely to be read.
 We all know that Confluence is where documentation goes to die.. :)
 
 
+### Don't make huge classes
+
+If classes gets too large they are harder to understand and maintain, if a service or class grows to much
+try to see if it can be split up or if maybe some functionality can be delegated to helper classes or utility
+classes. There is no right or wrong answer as to how to do this or an exact line number that is the limit, but
+I recently had to edit a 1500+ line java class and that is definately far above any sensible limit.
+
+
 ## Running this project / runLocal.sh
 
-runLocal.sh is a script that runs commands to help speed up the implementation and testing of services by running services
+```runLocal.sh``` is a script that runs commands to help speed up the implementation and testing of services by running services
 in docker containers and allowing you to quickly build and redeploy.
 
 Commands:
@@ -161,7 +182,7 @@ Options:
 * -s - adds a service to the list of selected services (by default all of them), accepts a comma-separated list as well as using -s multiple times
 * -a - resets the services/modules to work on to all
 
-runLocal.sh processes arguments in the order they are given, so using -s and -a only affects later commands.
+```runLocal.sh``` processes arguments in the order they are given, so using -s and -a only affects later commands.
 
 
 ### Examples
@@ -186,7 +207,7 @@ If account-service has the alias 'account' the above can also be done with:
 ./runLocal.sh -s account qbuild restart -a logs
 ```
 
-To quickbuild the account-service and book-service, restart their ntainers and follow the logs of those two services:
+To quickbuild the account-service and book-service, restart their containers and follow the logs of those two services:
 ```bash
 ./runLocal.sh -s account -s book qbuild restart logs
 ```
@@ -210,14 +231,14 @@ To shutdown the servics:
 ./runLocal.sh stop
 ```
 
-## Mono-repo or multiple-repos
+## Mono-repo or multiple repos
 
 It is up to you. This project is a mono-repo simply because I don't have a Nexus or Artifactory where I
 can publish artifacts and I don't want to host one either so it is easier for all the functionality to
 be in one repo.
 
-But for a multiple repo approach it should not be difficult to adapt, you would need to simplify the
-runLocal.sh and localdev set up and change the template copying script but should not be a big
+But for a multiple repo approach it should not be difficult to adapt, you would need to simplify
+```runLocal.sh``` and the localdev setup and change the template copying script but should not be a big
 issue. You could also re-use the root-POM here for a super-POM.
 
 Converting this to a multiple repo approach I'll leave as an exercise left to the reader :)

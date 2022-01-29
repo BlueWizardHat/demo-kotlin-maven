@@ -84,6 +84,7 @@
 				<scope>test</scope>
 			</dependency>
 
+			<!-- Solving convergence errors: Start -->
 			<dependency>
 				<groupId>org.jetbrains</groupId>
 				<artifactId>annotations</artifactId>
@@ -94,6 +95,7 @@
 				<artifactId>slf4j-api</artifactId>
 				<version>1.7.32</version>
 			</dependency>
+			<!-- Solving convergence errors: End-->
 		</dependencies>
 
 	</dependencyManagement>
