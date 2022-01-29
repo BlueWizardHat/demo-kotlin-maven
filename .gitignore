@@ -1,0 +1,30 @@
+# Macs
+.DS_Store
+
+# Maven
+target/
+**/*.versionsBackup
+
+# Gradle
+build/
+.gradle/
+
+# Eclipse/STS
+.classpath
+.project
+.settings/
+**/.factorypath
+**/.springBeans
+
+# IntelliJ
+.idea/
+*.iml
+*.iws
+.attach_pid*
+
+# VS Code
+.vscode/
+.sts4-cache/
+
+# vim
+*.swp

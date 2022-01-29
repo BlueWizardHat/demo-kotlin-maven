@@ -1,0 +1,62 @@
+spring:
+  application:
+    name: Template-Service
+  sleuth:
+    trace-id128: true
+    sampler:
+      probability: 0.0
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info"
+  info:
+    env.enabled: true
+
+# /actuator/info
+info:
+  service:
+    name: "@project.name@"
+    description: "@project.description@"
+    groupId: "@project.groupId@"
+    artifactId: "@project.artifactId@"
+    version: "@project.version@"
+    git:
+      commit: "@git.commit.id@"
+      describe: "@git.commit.id.describe@"
+    owner: BlueWizardHat
+  build:
+    maven: "@maven.version@"
+    time: "@maven.build.timestamp@"
+    system: "@os.name@/@os.arch@"
+    java:
+      runtime: "@java.runtime.name@"
+      vm: "@java.vm.name@"
+      version: "@java.version@"
+  runtime:
+    spring-profile: ${spring.profiles.active:default}
+    system: ${os.name}/${os.arch}
+    java:
+      runtime: ${java.runtime.name}
+      vm: ${java.vm.name}
+      version: ${java.version}
+
+logging:
+  level:
+    root: info
+    org.springframework.web: info
+    net.bluewizardhat.demoapp.template: info
+
+---
+# running locally on developers machine (also unit tests)
+spring:
+  config:
+    activate:
+      on-profile: local
+
+logging:
+  level:
+    root: info
+    org.springframework.web: info
+    net.bluewizardhat.demoapp.template: debug

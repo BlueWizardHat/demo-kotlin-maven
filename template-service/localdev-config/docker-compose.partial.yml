@@ -1,0 +1,30 @@
+  #
+  # template-service
+  # If you make any changes to this file remember to run "./runLocal.sh refresh".
+  #
+  template-service:
+    image: eclipse-temurin:17-jre-alpine
+    container_name: demoapp-template-service
+    command: sh /setup/run-jar template-service.jar postgresql-server:5432 redis-server:6379
+    ports:
+      - "##DEBUG_PORT##:4000"
+      - "##HTTP_PORT##:8080"
+    environment:
+      - "JAVA_DEBUG=${JAVA_DEBUG}"
+      - "SPRING_PROFILES_ACTIVE=local"
+      - "SPRING_DATASOURCE_URL=jdbc:postgresql://postgresql-server/template"
+      - "SPRING_DATASOURCE_USERNAME=template"
+      - "SPRING_DATASOURCE_PASSWORD=pg12345"
+      - "SPRING_REDIS_HOST=redis-server"
+      - "SPRING_REDIS_PORT=6379"
+    volumes:
+      - ./.deploy/template-service.jar:/code/template-service.jar:ro
+      - ./scripts/alpine/:/setup/:ro
+    links:
+      - postgresql-server
+      - redis-server
+    depends_on:
+      - postgresql-server
+      - redis-server
+    networks:
+      - demoapp
