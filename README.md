@@ -158,6 +158,18 @@ classes. There is no right or wrong answer as to how to do this or an exact line
 I recently had to edit a 1500+ line java class and that is definately far above any sensible limit.
 
 
+### Standardize units when persisting them
+
+When storing anything in the database or other persistent storage make sure to standardize the units you use.
+I prefer timestamps in UTC, weight in kilograms or grams, temperatures in celcius, etc. Don't have different
+items use different units. These units are easily converted to local times, pounds or fahrenheit so it can
+be done by the front-end (or in a pinch on retrieval, but it really belongs on the front-end) if you want to
+display these units to the end-user.
+
+This practice does not apply to currencies as they can change value over time, but all easily convertible
+units should be stored using the same unit in the entire project.
+
+
 ## Running this project / runLocal.sh
 
 ```runLocal.sh``` is a script that runs commands to help speed up the implementation and testing of services by running services
