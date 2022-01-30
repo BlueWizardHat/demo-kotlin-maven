@@ -32,6 +32,80 @@ mvn clean install dependency:sources
 For running it locally please refer to the section below named [Running this project / runLocal.sh](https://github.com/BlueWizardHat/demo-kotlin-maven#running-this-project--runlocalsh).
 
 
+## Running this project / runLocal.sh
+
+```runLocal.sh``` is a script that runs commands to help speed up the implementation and testing of services by running services
+in docker containers and allowing you to quickly build and redeploy.
+
+Commands:
+
+* refresh - Looks through the project to find 'localdev.config' files and uses them to (re-)configure the localdev setup
+* build - builds selected services with maven using the demo profile
+* qbuild - (quick)builds selected services with maven using the demo profile but without clean and skips tests
+* start|up|run - start all services in docker
+* debug - start all services in docker in debug mode
+* restart - restarts selected services
+* log or logs - tails the logs of selected services (by default all java/kotlin services but not 3rd party like postgres or redis)
+* alllogs - tails the logs of all services including 3rd party
+* pause - stops all containers but does not remove them, they can later be restarted again
+* stop or down - stops and removes all containers
+* dbconnect - drops you into a psql command line of the selected database
+
+Options:
+
+* -s - adds a service to the list of selected services (by default all of them), accepts a comma-separated list as well as using -s multiple times
+* -a - resets the services/modules to work on to all
+
+```runLocal.sh``` processes arguments in the order they are given, so using -s and -a only affects later commands.
+
+
+### Examples
+
+To build the project, start containers and follow the logs:
+```bash
+./runLocal.sh build start logs
+```
+
+To quickbuild the project, restart java/kotlin containers and follow the logs:
+```bash
+./runLocal.sh qbuild restart logs
+```
+
+To quickbuild only the account-service (assuming you have such a service), restart account-service container and follow the logs of all services:
+```bash
+./runLocal.sh -s account-service qbuild restart -a logs
+```
+
+If account-service has the alias 'account' the above can also be done with:
+```bash
+./runLocal.sh -s account qbuild restart -a logs
+```
+
+To quickbuild the account-service and book-service, restart their containers and follow the logs of those two services:
+```bash
+./runLocal.sh -s account -s book qbuild restart logs
+```
+or
+```bash
+./runLocal.sh -s account,book qbuild restart logs
+```
+
+To build and completely restart containers from scratch (including 3rd party) and follow logs:
+```bash
+./runLocal.sh stop build start logs
+```
+
+To connect to a database named 'account' with the user 'account' (advanced):
+```bash
+./runLocal.sh dbconnect account
+```
+
+To shutdown the servics:
+```bash
+./runLocal.sh stop
+```
+
+
 ## Good practices
 
 
@@ -169,79 +243,6 @@ display these units to the end-user.
 This practice does not apply to currencies as they can change value over time, but all easily convertible
 units should be stored using the same unit in the entire project.
 
-
-## Running this project / runLocal.sh
-
-```runLocal.sh``` is a script that runs commands to help speed up the implementation and testing of services by running services
-in docker containers and allowing you to quickly build and redeploy.
-
-Commands:
-
-* refresh - Looks through the project to find 'localdev.config' files and uses them to (re-)configure the localdev setup
-* build - builds selected services with maven using the demo profile
-* qbuild - (quick)builds selected services with maven using the demo profile but without clean and skips tests
-* start|up|run - start all services in docker
-* debug - start all services in docker in debug mode
-* restart - restarts selected services
-* log or logs - tails the logs of selected services (by default all java/kotlin services but not 3rd party like postgres or redis)
-* alllogs - tails the logs of all services including 3rd party
-* pause - stops all containers but does not remove them, they can later be restarted again
-* stop or down - stops and removes all containers
-* dbconnect - drops you into a psql command line of the selected database
-
-Options:
-
-* -s - adds a service to the list of selected services (by default all of them), accepts a comma-separated list as well as using -s multiple times
-* -a - resets the services/modules to work on to all
-
-```runLocal.sh``` processes arguments in the order they are given, so using -s and -a only affects later commands.
-
-
-### Examples
-
-To build the project, start containers and follow the logs:
-```bash
-./runLocal.sh build start logs
-```
-
-To quickbuild the project, restart java/kotlin containers and follow the logs:
-```bash
-./runLocal.sh qbuild restart logs
-```
-
-To quickbuild only the account-service (assuming you have such a service), restart account-service container and follow the logs of all services:
-```bash
-./runLocal.sh -s account-service qbuild restart -a logs
-```
-
-If account-service has the alias 'account' the above can also be done with:
-```bash
-./runLocal.sh -s account qbuild restart -a logs
-```
-
-To quickbuild the account-service and book-service, restart their containers and follow the logs of those two services:
-```bash
-./runLocal.sh -s account -s book qbuild restart logs
-```
-or
-```bash
-./runLocal.sh -s account,book qbuild restart logs
-```
-
-To build and completely restart containers from scratch (including 3rd party) and follow logs:
-```bash
-./runLocal.sh stop build start logs
-```
-
-To connect to a database named 'account' with the user 'account' (advanced):
-```bash
-./runLocal.sh dbconnect account
-```
-
-To shutdown the servics:
-```bash
-./runLocal.sh stop
-```
 
 ## Mono-repo or multiple repos
 
