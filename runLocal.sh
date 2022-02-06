@@ -37,6 +37,7 @@ function refresh_config() {
 		local jarToRun=""
 		local composeFile=""
 		local postgresInitScript=""
+		local integrationTestsJar=""
 		. $file
 
 		if [ ! -f "$composeFile" ]; then
