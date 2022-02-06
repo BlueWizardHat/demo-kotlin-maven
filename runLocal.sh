@@ -50,7 +50,7 @@ function refresh_config() {
 		ports="$ports $name=http/$httpPort,debug/$debugPort"
 
 		sed "s|##DEBUG_PORT##|$debugPort|g;s|##HTTP_PORT##|$httpPort|g" "$composeFile" >> localdev/docker-compose.yml
-		if [ -f "$postgresInitScript" ]; then
+		if [ -n "$postgresInitScript" ]; then
 			cp "$postgresInitScript" "localdev/app-config/postgresql-initdb.d/$name.sh"
 			chmod a+x "localdev/app-config/postgresql-initdb.d/$name.sh"
 		fi

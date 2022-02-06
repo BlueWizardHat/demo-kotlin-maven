@@ -1,4 +1,4 @@
-# Build production image
+# Build production image for Template-Service
 
 FROM eclipse-temurin:17-jre-alpine
 

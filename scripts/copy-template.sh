@@ -102,28 +102,21 @@ for entry in $(ls -A .); do
 	fi
 done
 
+# Rename packages
+$scriptDir/rename-packages.sh "$TEMPLATE_PACKAGE" "$NEW_PACKAGE"
+
 echo
 echo "Replace in '$NEW_SERVICE' files:"
 echo "  'template-service' -> '$NEW_SERVICE'"
 echo "  'Template-Service' -> '$PRETTY_SERVICE'"
 echo
-files=$(find . -name target -prune -o -type f \( -regex ".*\.kts?" -o -name "*.java" -o -regex ".*\.ya?ml" -o -name "*.xml" -o -name "*.properties" -o -name "*.md" -o -name "Dockerfile*" \) | grep -v -e "/target$")
+files=$(find . -name target -prune -o -type f \( -regex ".*\.kts?" -o -name "*.java" -o -regex ".*\.ya?ml" -o -name "*.xml" -o -name "*.properties" -o -name "*.md" -o -name "Dockerfile*" -o -name "localdev.config" \) | grep -v -e "/target$")
 for file in $files; do
 	if [ -f "$file" ]; then
 		echo "  * Processing file $file"
 		sed -i "s|template-service|$NEW_SERVICE|g;s|Template-Service|$PRETTY_SERVICE|g" "$file"
 	fi
 done
-echo
-echo "  'template' -> '${NEW_SERVICE%-service}'"
-files=$(find localdev-config -type f)
-for file in $files; do
-	echo "  * Processing file $file"
-	sed -i "s|template|${NEW_SERVICE%-service}|g" "$file"
-done
-
-# Rename packages
-$scriptDir/rename-packages.sh "$TEMPLATE_PACKAGE" "$NEW_PACKAGE"
 
 # Renaming files with 'template-service' in their name.
 echo
