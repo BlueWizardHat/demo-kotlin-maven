@@ -186,7 +186,7 @@ function integration_tests() {
 			if [ $exit_code == 0 ]; then
 				echo -e "\n\e[1;32m✓ $name success\e[0m\n"
 			else
-				echo -e "\n\e[1;31m❌ $name failed\e[0m\n"
+				echo -e "\n\e[1;31m❌ $name failed (error code $exit_code)\e[0m\n"
 				exit $exit_code
 			fi
 		fi
