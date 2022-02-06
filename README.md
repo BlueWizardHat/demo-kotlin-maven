@@ -23,7 +23,7 @@ mvn clean install
 ```
 is all that is needed to build all the services and modules in the project.
 
-It may also be advantages to pre-download sources for dependencies in advance so they are already
+It may also an advantage to pre-download sources for dependencies in advance so they are already
 downloaded when your IDE needs them.
 ```bash
 mvn clean install dependency:sources
@@ -40,8 +40,8 @@ in docker containers and allowing you to quickly build and redeploy.
 Commands:
 
 * refresh - Looks through the project to find 'localdev.config' files and uses them to (re-)configure the localdev setup
-* build - builds selected services with maven using the demo profile
-* qbuild - (quick)builds selected services with maven using the demo profile but without clean and skips tests
+* build - builds selected services with maven using the local profile
+* qbuild - (quick)builds selected services with maven using the local profile but without clean and skips tests
 * start|up|run - start all services in docker
 * debug - start all services in docker in debug mode
 * restart - restarts selected services
@@ -49,6 +49,7 @@ Commands:
 * alllogs - tails the logs of all services including 3rd party
 * pause - stops all containers but does not remove them, they can later be restarted again
 * stop or down - stops and removes all containers
+* itests - run integration tests against running containers
 * dbconnect - drops you into a psql command line of the selected database
 
 Options:

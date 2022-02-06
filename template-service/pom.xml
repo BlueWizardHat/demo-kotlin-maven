@@ -21,6 +21,7 @@
 		<module>template-service-cache</module>
 		<module>template-service</module>
 		<module>template-service-client</module>
+		<module>template-service-integration-tests</module>
 	</modules>
 
 	<dependencies>

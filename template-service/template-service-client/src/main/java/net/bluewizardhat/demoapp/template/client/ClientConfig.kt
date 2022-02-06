@@ -1,3 +1,3 @@
-package net.bluewizardhat.demoapp.template.cache
+package net.bluewizardhat.demoapp.template.client
 
 class ClientConfig

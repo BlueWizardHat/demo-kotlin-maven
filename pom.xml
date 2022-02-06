@@ -316,7 +316,8 @@
 									<requireReleaseDeps>
 										<failWhenParentIsSnapshot>false</failWhenParentIsSnapshot>
 										<excludes>
-											<exclude>net.bluewizardhat.*:*</exclude>
+											<exclude>net.bluewizardhat.demoapp.*:*</exclude>
+											<exclude>net.bluewizardhat.common.*:*</exclude>
 										</excludes>
 									</requireReleaseDeps>
 									<!-- <requireUpperBoundDeps /> -->

@@ -1,3 +1,5 @@
+# Build production image
+
 FROM eclipse-temurin:17-jre-alpine
 
 EXPOSE 8080
