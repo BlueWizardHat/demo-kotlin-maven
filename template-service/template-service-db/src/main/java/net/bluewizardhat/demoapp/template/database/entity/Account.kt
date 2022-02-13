@@ -31,6 +31,9 @@ data class Account(
     @Column(name = "created", nullable = false)
     val created: OffsetDateTime = OffsetDateTime.now(),
 
+    @Column(name = "updated", nullable = false)
+    val updated: OffsetDateTime = OffsetDateTime.now(),
+
     @Version
     @Column(name = "version", nullable = false)
     var version: Long? = null
