@@ -17,26 +17,29 @@ class RedisCache(
     private val valueOperations = redisTemplate.opsForValue()
     private val lockOperations = redisTemplate.opsForValue()
 
-    final inline fun <reified T> cached(key: String, supplier: Supplier<T>): T {
-        var value = readFromCache(key, T::class.java)
+    final inline fun <reified T> cached(key: String, supplier: Supplier<T>): T =
+        cached(key, T::class.java, supplier)
+
+    fun <T> cached(key: String, cl: Class<T>, supplier: Supplier<T>): T {
+        var value = readFromCache(key, cl)
         if (value == null) {
-            // log.debug { "'$key' not found in cache" }
+            log.debug { "'$key' not found in cache" }
             value = supplier.get()
-            if (value != null) {
-                writeToCache(key, value)
-            }
+            writeToCache(key, value)
         }
         return value as T
     }
 
-    fun <T> readFromCache(key: String, cl: Class<T>): T? {
+    private fun <T> readFromCache(key: String, cl: Class<T>): T? {
         log.debug { "Reading '$key' from cache" }
         val serialized = valueOperations[key] as String?
         return if (serialized == null) null else objectMapper.readValue(serialized, cl)
     }
 
-    fun <T> writeToCache(key: String, value: T) {
-        log.debug { "Writing '$key' to cache" }
-        valueOperations[key] = objectMapper.writeValueAsString(value)
+    private fun <T> writeToCache(key: String, value: T) {
+        if (value != null) {
+            log.debug { "Writing '$key' to cache" }
+            valueOperations[key] = objectMapper.writeValueAsString(value)
+        }
     }
 }
