@@ -2,6 +2,7 @@ package net.bluewizardhat.demoapp.template.service
 
 import mu.KotlinLogging
 import net.bluewizardhat.demoapp.template.api.Account
+import net.bluewizardhat.demoapp.template.api.AccountOperations
 import net.bluewizardhat.demoapp.template.api.NewAccountRequest
 import net.bluewizardhat.demoapp.template.api.UpdateAccountRequest
 import net.bluewizardhat.demoapp.template.database.repository.AccountRepository
@@ -26,11 +27,11 @@ import net.bluewizardhat.demoapp.template.database.entity.Account as AccountEnti
 @RequestMapping("/api/account")
 class AccountService(
     private val accountRepository: AccountRepository
-) {
+) : AccountOperations {
     private val log = KotlinLogging.logger {}
 
     @GetMapping(path = ["/"])
-    fun findAllAccounts(
+    override fun findAllAccounts(
         @RequestParam(required = false, defaultValue = "0") page: Int,
         @RequestParam(required = false, defaultValue = "10") pageSize: Int
     ): List<Account> {
@@ -39,7 +40,7 @@ class AccountService(
     }
 
     @GetMapping(path = ["/{uuid}"])
-    fun getAccountByUuid(@PathVariable("uuid") uuid: UUID): Account {
+    override fun getAccountByUuid(@PathVariable("uuid") uuid: UUID): Account {
         log.debug { "getAccount('$uuid')" }
         return accountRepository
             .findByUuid(uuid)
@@ -48,14 +49,14 @@ class AccountService(
     }
 
     @PostMapping(path = ["/"])
-    fun saveNewAccount(@Valid @RequestBody request: NewAccountRequest): Account {
+    override fun saveNewAccount(@Valid @RequestBody request: NewAccountRequest): Account {
         log.debug { "saveNewAccount('$request')" }
         return accountRepository.save(request.toEntity()).toApi()
     }
 
     @Transactional
     @PatchMapping(path = ["/"])
-    fun updateExistingAccount(@Valid @RequestBody request: UpdateAccountRequest): Int {
+    override fun updateExistingAccount(@Valid @RequestBody request: UpdateAccountRequest): Int {
         log.debug { "updateExistingAccount('$request')" }
         return accountRepository.updateAccount(request.uuid, request.name)
     }
