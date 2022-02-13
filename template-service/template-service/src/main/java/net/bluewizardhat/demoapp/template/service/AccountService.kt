@@ -39,13 +39,13 @@ class AccountService(
         return accountRepository.findAll(PageRequest.of(page, pageSize, AccountEntity.defaultSort)).toApis()
     }
 
-    @GetMapping(path = ["/{uuid}"])
-    override fun getAccountByUuid(@PathVariable("uuid") uuid: UUID): Account {
-        log.debug { "getAccount('$uuid')" }
+    @GetMapping(path = ["/{id}"])
+    override fun getAccountById(@PathVariable("id") id: UUID): Account {
+        log.debug { "getAccount('$id')" }
         return accountRepository
-            .findByUuid(uuid)
+            .findById(id)
             .map { it.toApi() }
-            .orElseThrow { IllegalArgumentException("Account with id '$uuid' not found") }
+            .orElseThrow { IllegalArgumentException("Account with id '$id' not found") }
     }
 
     @PostMapping(path = ["/"])
@@ -58,6 +58,7 @@ class AccountService(
     @PatchMapping(path = ["/"])
     override fun updateExistingAccount(@Valid @RequestBody request: UpdateAccountRequest): Int {
         log.debug { "updateExistingAccount('$request')" }
-        return accountRepository.updateAccount(request.uuid, request.name)
+        val a = accountRepository.getById(request.id)
+        return accountRepository.updateAccount(request.id, request.name)
     }
 }

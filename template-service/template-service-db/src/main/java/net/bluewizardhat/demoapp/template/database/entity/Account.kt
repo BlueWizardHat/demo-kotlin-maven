@@ -7,7 +7,6 @@ import java.util.UUID
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue
-import javax.persistence.GenerationType
 import javax.persistence.Id
 import javax.persistence.Table
 import javax.persistence.Version
@@ -17,13 +16,10 @@ import javax.validation.constraints.Size
 @Table(name = "account")
 data class Account(
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long? = null,
-
+    @GeneratedValue
     @Type(type = "pg-uuid")
-    @Size(min = 36, max = 36)
-    @Column(name = "uuid", nullable = false, length = 36)
-    val uuid: UUID = UUID.randomUUID(),
+    @Column(name = "id", nullable = false)
+    val id: UUID? = null,
 
     @Size(max = 64)
     @Column(name = "name", nullable = false, length = 64)

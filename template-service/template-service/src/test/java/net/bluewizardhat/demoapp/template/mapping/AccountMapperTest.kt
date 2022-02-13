@@ -25,7 +25,6 @@ internal class AccountMapperTest {
 
         // Verify
         assertEquals(expectedResult.name, actualResult.name)
-        assertNotNull(actualResult.uuid)
         assertNotNull(actualResult.created)
         assertNotNull(actualResult.updated)
     }
@@ -34,18 +33,18 @@ internal class AccountMapperTest {
     internal fun testEntityToApi() {
         // Setup
         val name = "AccountName"
-        val uuid = UUID.randomUUID()
+        val id = UUID.randomUUID()
         val created = OffsetDateTime.now()
         val updated = created.plusHours(3)
         val entity = AccountEntity(
             name = name,
-            uuid = uuid,
+            id = id,
             created = created,
             updated = updated
         )
         val expectedResult = Account(
             name = name,
-            uuid = uuid,
+            id = id,
             created = created,
             updated = updated
         )

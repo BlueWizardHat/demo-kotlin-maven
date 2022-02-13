@@ -10,14 +10,14 @@ data class NewAccountRequest(
 )
 
 data class UpdateAccountRequest(
-    val uuid: UUID = UUID.randomUUID(),
+    val id: UUID,
 
     @Size(max = Account.nameLength)
     val name: String
 )
 
 data class Account(
-    val uuid: UUID = UUID.randomUUID(),
+    val id: UUID,
 
     @Size(max = nameLength)
     val name: String,
