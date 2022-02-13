@@ -9,7 +9,7 @@ object AccountMapper {
     fun NewAccountRequest.toEntity(): AccountEntity {
         val now = OffsetDateTime.now()
         return AccountEntity(
-            name = name,
+            name = name ?: throw IllegalArgumentException("name cannot be null"),
             created = now,
             updated = now
         )

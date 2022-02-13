@@ -5,6 +5,12 @@ spring:
     trace-id128: true
     sampler:
       probability: 0.0
+  datasource.driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQL10Dialect
+    hibernate.ddl-auto: validate
+
+  cache.type: redis
 
 management:
   endpoints:

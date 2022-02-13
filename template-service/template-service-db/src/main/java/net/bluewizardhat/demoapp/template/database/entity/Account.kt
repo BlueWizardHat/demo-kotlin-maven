@@ -1,6 +1,5 @@
 package net.bluewizardhat.demoapp.template.database.entity
 
-import org.hibernate.annotations.Type
 import org.springframework.data.domain.Sort
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -17,11 +16,10 @@ import javax.validation.constraints.Size
 data class Account(
     @Id
     @GeneratedValue
-    @Type(type = "pg-uuid")
     @Column(name = "id", nullable = false)
     val id: UUID? = null,
 
-    @Size(max = 64)
+    @field:Size(max = 64)
     @Column(name = "name", nullable = false, length = 64)
     val name: String,
 

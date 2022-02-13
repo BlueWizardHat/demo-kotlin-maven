@@ -10,6 +10,7 @@ import net.bluewizardhat.demoapp.template.mapping.AccountMapper.toApi
 import net.bluewizardhat.demoapp.template.mapping.AccountMapper.toApis
 import net.bluewizardhat.demoapp.template.mapping.AccountMapper.toEntity
 import org.springframework.data.domain.PageRequest
+import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -23,6 +24,7 @@ import javax.transaction.Transactional
 import javax.validation.Valid
 import net.bluewizardhat.demoapp.template.database.entity.Account as AccountEntity
 
+@Validated
 @RestController
 @RequestMapping("/api/account")
 class AccountService(
@@ -59,6 +61,6 @@ class AccountService(
     override fun updateExistingAccount(@Valid @RequestBody request: UpdateAccountRequest): Int {
         log.debug { "updateExistingAccount('$request')" }
         val a = accountRepository.getById(request.id)
-        return accountRepository.updateAccount(request.id, request.name)
+        return accountRepository.updateAccount(request.id, request.name!!)
     }
 }

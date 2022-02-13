@@ -17,7 +17,7 @@ internal class AccountMapperTest {
         // Setup
         val request = NewAccountRequest("AccountName")
         val expectedResult = AccountEntity(
-            name = request.name
+            name = request.name ?: ""
         )
 
         // Execute
