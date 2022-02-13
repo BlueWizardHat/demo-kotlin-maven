@@ -5,12 +5,18 @@ import java.util.UUID
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.Size
 
+/**
+ * Request to create a new Account.
+ */
 data class NewAccountRequest(
     @field:NotBlank
     @field:Size(max = Account.nameLength)
     val name: String?
 )
 
+/**
+ * Request to update an existing Account.
+ */
 data class UpdateAccountRequest(
     val id: UUID,
 
@@ -19,11 +25,12 @@ data class UpdateAccountRequest(
     val name: String?
 )
 
+/**
+ * An Account.
+ */
 data class Account(
     val id: UUID,
 
-    @field:NotBlank
-    @field:Size(max = nameLength)
     val name: String,
 
     val created: OffsetDateTime,

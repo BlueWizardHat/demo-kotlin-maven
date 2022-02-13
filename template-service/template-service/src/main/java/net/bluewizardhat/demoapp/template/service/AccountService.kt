@@ -5,6 +5,7 @@ import net.bluewizardhat.demoapp.template.api.Account
 import net.bluewizardhat.demoapp.template.api.AccountOperations
 import net.bluewizardhat.demoapp.template.api.NewAccountRequest
 import net.bluewizardhat.demoapp.template.api.UpdateAccountRequest
+import net.bluewizardhat.demoapp.template.cache.RedisCache
 import net.bluewizardhat.demoapp.template.database.repository.AccountRepository
 import net.bluewizardhat.demoapp.template.mapping.AccountMapper.toApi
 import net.bluewizardhat.demoapp.template.mapping.AccountMapper.toApis
@@ -28,7 +29,8 @@ import net.bluewizardhat.demoapp.template.database.entity.Account as AccountEnti
 @RestController
 @RequestMapping("/api/account")
 class AccountService(
-    private val accountRepository: AccountRepository
+    private val accountRepository: AccountRepository,
+    private val cache: RedisCache
 ) : AccountOperations {
     private val log = KotlinLogging.logger {}
 
@@ -44,10 +46,12 @@ class AccountService(
     @GetMapping(path = ["/{id}"])
     override fun getAccountById(@PathVariable("id") id: UUID): Account {
         log.debug { "getAccount('$id')" }
-        return accountRepository
-            .findById(id)
-            .map { it.toApi() }
-            .orElseThrow { IllegalArgumentException("Account with id '$id' not found") }
+        return cache.cached(id.toString()) {
+            accountRepository
+                .findById(id)
+                .map { it.toApi() }
+                .orElseThrow { IllegalArgumentException("Account with id '$id' not found") }
+        }
     }
 
     @PostMapping(path = ["/"])

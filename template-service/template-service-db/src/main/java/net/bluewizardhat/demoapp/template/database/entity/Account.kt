@@ -14,23 +14,23 @@ import javax.validation.constraints.Size
 @Entity
 @Table(name = "account")
 data class Account(
-    @Id
-    @GeneratedValue
-    @Column(name = "id", nullable = false)
+    @field:Id
+    @field:GeneratedValue
+    @field:Column(name = "id", nullable = false)
     val id: UUID? = null,
 
     @field:Size(max = 64)
-    @Column(name = "name", nullable = false, length = 64)
+    @field:Column(name = "name", nullable = false, length = 64)
     val name: String,
 
-    @Column(name = "created", nullable = false)
+    @field:Column(name = "created", nullable = false)
     val created: OffsetDateTime = OffsetDateTime.now(),
 
-    @Column(name = "updated", nullable = false)
+    @field:Column(name = "updated", nullable = false)
     val updated: OffsetDateTime = OffsetDateTime.now(),
 
-    @Version
-    @Column(name = "version", nullable = false)
+    @field:Version
+    @field:Column(name = "version", nullable = false)
     var version: Long? = null
 ) {
     companion object {
