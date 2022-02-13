@@ -10,3 +10,4 @@ create table account (
     version                 bigint not null default 1
 );
 create unique index idx_account_uuid on account (uuid);
+create index idx_account_created on account (created);

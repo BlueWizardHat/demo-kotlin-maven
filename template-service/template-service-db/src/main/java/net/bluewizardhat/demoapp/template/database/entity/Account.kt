@@ -1,6 +1,7 @@
 package net.bluewizardhat.demoapp.template.database.entity
 
 import org.hibernate.annotations.Type
+import org.springframework.data.domain.Sort
 import java.time.OffsetDateTime
 import java.util.UUID
 import javax.persistence.Column
@@ -37,4 +38,8 @@ data class Account(
     @Version
     @Column(name = "version", nullable = false)
     var version: Long? = null
-)
+) {
+    companion object {
+        val defaultSort: Sort = Sort.by(Sort.Order.desc("created"))
+    }
+}
