@@ -1,0 +1,3 @@
+package net.bluewizardhat.common.exception.handling
+
+class ExceptionHandlingConfiguration

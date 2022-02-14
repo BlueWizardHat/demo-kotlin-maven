@@ -1,11 +1,11 @@
 package net.bluewizardhat.demoapp.template.service
 
 import mu.KotlinLogging
+import net.bluewizardhat.common.cache.RedisCache
 import net.bluewizardhat.demoapp.template.api.Account
 import net.bluewizardhat.demoapp.template.api.AccountOperations
 import net.bluewizardhat.demoapp.template.api.NewAccountRequest
 import net.bluewizardhat.demoapp.template.api.UpdateAccountRequest
-import net.bluewizardhat.demoapp.template.cache.RedisCache
 import net.bluewizardhat.demoapp.template.database.repository.AccountRepository
 import net.bluewizardhat.demoapp.template.mapping.AccountMapper.toApi
 import net.bluewizardhat.demoapp.template.mapping.AccountMapper.toApis
@@ -64,7 +64,7 @@ class AccountService(
     @PatchMapping(path = ["/"])
     override fun updateExistingAccount(@Valid @RequestBody request: UpdateAccountRequest): Int {
         log.debug { "updateExistingAccount('$request')" }
-        val a = accountRepository.getById(request.id)
+        cache.invalidate(request.id.toString())
         return accountRepository.updateAccount(request.id, request.name!!)
     }
 }

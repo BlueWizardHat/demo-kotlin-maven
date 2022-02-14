@@ -2,23 +2,23 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>net.bluewizardhat.demoapp.template</groupId>
-		<artifactId>template-service-parent</artifactId>
+		<groupId>net.bluewizardhat.common</groupId>
+		<artifactId>common-libraries-parent</artifactId>
 		<version>1.0-SNAPSHOT</version>
 	</parent>
 
-	<name>Template-Service - Cache (Redis)</name>
-	<groupId>net.bluewizardhat.demoapp.template</groupId>
-	<artifactId>template-service-cache</artifactId>
+	<name>Common Libraries - Redis Cache</name>
+	<groupId>net.bluewizardhat.common</groupId>
+	<artifactId>common-redis-cache</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<description>Template-Service - Cache (Redis)</description>
+	<description>Common Libraries - Redis Cache</description>
 
 	<dependencies>
 		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-context</artifactId>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>

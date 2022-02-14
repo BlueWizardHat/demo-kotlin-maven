@@ -25,8 +25,8 @@
 			<artifactId>template-service-db</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>net.bluewizardhat.demoapp.template</groupId>
-			<artifactId>template-service-cache</artifactId>
+			<groupId>net.bluewizardhat.common</groupId>
+			<artifactId>common-redis-cache</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.module</groupId>

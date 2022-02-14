@@ -11,7 +11,7 @@ class AccountClient : AccountOperations {
         TODO("Not yet implemented")
     }
 
-    override fun getAccountById(uuid: UUID): Account {
+    override fun getAccountById(id: UUID): Account {
         TODO("Not yet implemented")
     }
 

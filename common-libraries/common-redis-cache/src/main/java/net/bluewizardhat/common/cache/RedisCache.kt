@@ -1,4 +1,4 @@
-package net.bluewizardhat.demoapp.template.cache
+package net.bluewizardhat.common.cache
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import mu.KotlinLogging
@@ -28,6 +28,10 @@ class RedisCache(
             writeToCache(key, value)
         }
         return value as T
+    }
+
+    fun invalidate(key: String) {
+        valueOperations.operations.delete(key)
     }
 
     private fun <T> readFromCache(key: String, cl: Class<T>): T? {

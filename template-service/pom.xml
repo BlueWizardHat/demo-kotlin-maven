@@ -18,14 +18,10 @@
 	<modules>
 		<module>template-service-api</module>
 		<module>template-service-db</module>
-		<module>template-service-cache</module>
 		<module>template-service</module>
 		<module>template-service-client</module>
 		<module>template-service-integration-tests</module>
 	</modules>
-
-	<dependencies>
-	</dependencies>
 
 	<dependencyManagement>
 		<dependencies>
@@ -41,13 +37,15 @@
 			</dependency>
 			<dependency>
 				<groupId>net.bluewizardhat.demoapp.template</groupId>
-				<artifactId>template-service-cache</artifactId>
+				<artifactId>template-service-client</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>net.bluewizardhat.demoapp.template</groupId>
-				<artifactId>template-service-client</artifactId>
+				<groupId>net.bluewizardhat.common</groupId>
+				<artifactId>common-libraries-parent</artifactId>
 				<version>${project.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

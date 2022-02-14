@@ -17,6 +17,7 @@
 	<description>DemoApp: Root/Super POM</description>
 
 	<modules>
+		<module>common-libraries</module>
 		<module>template-service</module>
 	</modules>
 
@@ -321,7 +322,7 @@
 										<failWhenParentIsSnapshot>false</failWhenParentIsSnapshot>
 										<excludes>
 											<exclude>net.bluewizardhat.demoapp.*:*</exclude>
-											<exclude>net.bluewizardhat.common.*:*</exclude>
+											<exclude>net.bluewizardhat.common:*</exclude>
 										</excludes>
 									</requireReleaseDeps>
 									<!-- <requireUpperBoundDeps /> -->
