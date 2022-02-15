@@ -1,6 +1,6 @@
-package net.bluewizardhat.common.exceptions
+package net.bluewizardhat.common.errors
 
-sealed class ErrorDetailsException(
+sealed class DetailedException(
     message: String?,
     val details: ErrorDetails,
     cause: Throwable? = null

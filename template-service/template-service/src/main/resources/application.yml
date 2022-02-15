@@ -65,4 +65,5 @@ logging:
   level:
     root: info
     org.springframework.web: info
+    net.bluewizardhat.common: debug
     net.bluewizardhat.demoapp.template: debug

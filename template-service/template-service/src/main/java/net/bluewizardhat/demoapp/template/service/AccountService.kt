@@ -1,7 +1,7 @@
 package net.bluewizardhat.demoapp.template.service
 
 import mu.KotlinLogging
-import net.bluewizardhat.common.cache.RedisCache
+import net.bluewizardhat.common.cache.SimpleRedisCacheFactory
 import net.bluewizardhat.demoapp.template.api.Account
 import net.bluewizardhat.demoapp.template.api.AccountOperations
 import net.bluewizardhat.demoapp.template.api.NewAccountRequest
@@ -20,9 +20,12 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.time.Duration
 import java.util.UUID
 import javax.transaction.Transactional
 import javax.validation.Valid
+import javax.validation.constraints.Max
+import javax.validation.constraints.Min
 import net.bluewizardhat.demoapp.template.database.entity.Account as AccountEntity
 
 @Validated
@@ -30,23 +33,27 @@ import net.bluewizardhat.demoapp.template.database.entity.Account as AccountEnti
 @RequestMapping("/api/account")
 class AccountService(
     private val accountRepository: AccountRepository,
-    private val cache: RedisCache
+    private val cacheFactory: SimpleRedisCacheFactory
 ) : AccountOperations {
     private val log = KotlinLogging.logger {}
+    private val entityCache = cacheFactory.forPool("account:entity")
+    private val pageCache = cacheFactory.forPool("account:page")
 
     @GetMapping(path = ["/"])
     override fun findAllAccounts(
-        @RequestParam(required = false, defaultValue = "0") page: Int,
-        @RequestParam(required = false, defaultValue = "10") pageSize: Int
+        @RequestParam(required = false, defaultValue = "0") @Min(0) page: Int,
+        @RequestParam(required = false, defaultValue = "10") @Min(5) @Max(100) pageSize: Int
     ): List<Account> {
         log.debug { "findAllAccounts(page = $page, pageSize = $pageSize)" }
-        return accountRepository.findAll(PageRequest.of(page, pageSize, AccountEntity.defaultSort)).toApis()
+        return pageCache.cached(key = "[$page*$pageSize]", expireAfter = Duration.ofHours(1), refreshAfter = Duration.ofMinutes(45)) {
+            accountRepository.findAll(PageRequest.of(page, pageSize, AccountEntity.defaultSort)).toApis()
+        }
     }
 
     @GetMapping(path = ["/{id}"])
     override fun getAccountById(@PathVariable("id") id: UUID): Account {
         log.debug { "getAccount('$id')" }
-        return cache.cached(id.toString()) {
+        return entityCache.cached(key = id.toString(), expireAfter = Duration.ofHours(1), refreshAfter = Duration.ofMinutes(45)) {
             accountRepository
                 .findById(id)
                 .map { it.toApi() }
@@ -57,6 +64,7 @@ class AccountService(
     @PostMapping(path = ["/"])
     override fun saveNewAccount(@Valid @RequestBody request: NewAccountRequest): Account {
         log.debug { "saveNewAccount('$request')" }
+        pageCache.invalidateAll()
         return accountRepository.save(request.toEntity()).toApi()
     }
 
@@ -64,7 +72,8 @@ class AccountService(
     @PatchMapping(path = ["/"])
     override fun updateExistingAccount(@Valid @RequestBody request: UpdateAccountRequest): Int {
         log.debug { "updateExistingAccount('$request')" }
-        cache.invalidate(request.id.toString())
+        entityCache.invalidate(request.id.toString())
+        pageCache.invalidateAll()
         return accountRepository.updateAccount(request.id, request.name!!)
     }
 }

@@ -1,4 +1,4 @@
-package net.bluewizardhat.common.exceptions
+package net.bluewizardhat.common.errors
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonIgnore
