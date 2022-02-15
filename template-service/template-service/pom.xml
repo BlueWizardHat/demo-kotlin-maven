@@ -26,7 +26,7 @@
 		</dependency>
 		<dependency>
 			<groupId>net.bluewizardhat.common</groupId>
-			<artifactId>common-redis-cache</artifactId>
+			<artifactId>bluewizardhat-spring-rediscache</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.module</groupId>

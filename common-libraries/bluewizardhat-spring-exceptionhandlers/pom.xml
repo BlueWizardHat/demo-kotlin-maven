@@ -9,7 +9,7 @@
 
 	<name>Common Libraries - Spring Exception Handling</name>
 	<groupId>net.bluewizardhat.common</groupId>
-	<artifactId>common-spring-exception-handlers</artifactId>
+	<artifactId>bluewizardhat-spring-exceptionhandlers</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
@@ -18,7 +18,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>net.bluewizardhat.common</groupId>
-			<artifactId>common-exceptions</artifactId>
+			<artifactId>bluewizardhat-errordetails</artifactId>
 		</dependency>
 	</dependencies>
 

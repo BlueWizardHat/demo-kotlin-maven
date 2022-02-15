@@ -9,7 +9,7 @@
 
 	<name>Common Libraries - Redis Cache</name>
 	<groupId>net.bluewizardhat.common</groupId>
-	<artifactId>common-redis-cache</artifactId>
+	<artifactId>bluewizardhat-spring-rediscache</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 

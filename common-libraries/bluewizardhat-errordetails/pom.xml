@@ -7,13 +7,13 @@
 		<version>1.0-SNAPSHOT</version>
 	</parent>
 
-	<name>Common Libraries - Exceptions</name>
+	<name>Common Libraries - Error Details</name>
 	<groupId>net.bluewizardhat.common</groupId>
-	<artifactId>common-exceptions</artifactId>
+	<artifactId>bluewizardhat-errordetails</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<description>Common Libraries - Exceptions</description>
+	<description>Common Libraries - Error Details</description>
 
 	<dependencies>
 		<!--

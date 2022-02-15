@@ -16,26 +16,26 @@
 	<description>Common Libraries - Parent POM</description>
 
 	<modules>
-		<module>common-exceptions</module>
-		<module>common-spring-exception-handlers</module>
-		<module>common-redis-cache</module>
+		<module>bluewizardhat-errordetails</module>
+		<module>bluewizardhat-spring-exceptionhandlers</module>
+		<module>bluewizardhat-spring-rediscache</module>
 	</modules>
 
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
 				<groupId>net.bluewizardhat.common</groupId>
-				<artifactId>common-exceptions</artifactId>
+				<artifactId>bluewizardhat-errordetails</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>net.bluewizardhat.common</groupId>
-				<artifactId>common-spring-exception-handlers</artifactId>
+				<artifactId>bluewizardhat-spring-exceptionhandlers</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>net.bluewizardhat.common</groupId>
-				<artifactId>common-redis-cache</artifactId>
+				<artifactId>bluewizardhat-spring-rediscache</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 		</dependencies>
