@@ -103,6 +103,7 @@ class SimpleRedisCache(
             log.debug { "Queueing '$key' for refresh" }
             executor.execute {
                 try {
+                    Thread.sleep(250) // ensure the parent thread has enough time to release the lock
                     doWithLock("$key.lock.refresh") {
                         writeToCache(key, expireAfter, refreshAfter, supplier.get())
                     }
@@ -125,7 +126,7 @@ class SimpleRedisCache(
     }
 
     private fun doWithLock(lock: String, task: Runnable) {
-        val lockAcquired = valueOperations.setIfAbsent(lock, "true") ?: false
+        val lockAcquired = valueOperations.setIfAbsent(lock, "true", Duration.ofMinutes(5)) ?: false
         if (lockAcquired) {
             log.debug { "Acquired lock '$lock'" }
             try {

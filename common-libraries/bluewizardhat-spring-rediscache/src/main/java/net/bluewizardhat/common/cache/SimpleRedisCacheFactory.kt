@@ -58,9 +58,9 @@ class SimpleRedisCacheFactory(
      * originating thread.
      */
     private fun wrapLoggingContext(runnable: Runnable): Runnable {
-        val context: Map<String, String> = MDC.getCopyOfContextMap()
+        val context: Map<String, String>? = MDC.getCopyOfContextMap()
         return Runnable {
-            val original: Map<String, String> = MDC.getCopyOfContextMap()
+            val original: Map<String, String>? = MDC.getCopyOfContextMap()
             try {
                 overwriteLoggingContext(context)
                 runnable.run()
