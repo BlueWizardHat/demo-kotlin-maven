@@ -3,8 +3,7 @@ package net.bluewizardhat.common.cache
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import mu.KotlinLogging
-import org.springframework.data.redis.core.RedisTemplate
-import org.springframework.data.redis.core.ValueOperations
+import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.stereotype.Component
 import java.time.Duration
 import java.time.OffsetDateTime
@@ -12,7 +11,7 @@ import java.util.function.Supplier
 
 @Component
 class SimpleRedisCacheFactory(
-    private val redisTemplate: RedisTemplate<Any, Any>,
+    private val redisTemplate: StringRedisTemplate,
     private val objectMapper: ObjectMapper
 ) {
     fun forPool(pool: String) = SimpleRedisCache(redisTemplate, objectMapper, pool)
@@ -33,13 +32,13 @@ class SimpleRedisCacheFactory(
  * to be fetched periodically.
  */
 class SimpleRedisCache(
-    private val redisTemplate: RedisTemplate<Any, Any>,
+    private val redisTemplate: StringRedisTemplate,
     private val objectMapper: ObjectMapper,
     private val pool: String
 ) {
     private val log = KotlinLogging.logger {}
 
-    private val valueOperations = redisTemplate.opsForValue() as ValueOperations<String, Any>
+    private val valueOperations = redisTemplate.opsForValue()
 
     /**
      * Main caching mechanism.
@@ -51,6 +50,13 @@ class SimpleRedisCache(
      */
     inline fun <reified T> cached(key: String, expireAfter: Duration, refreshAfter: Duration? = null, supplier: Supplier<T>): T =
         cached(key, expireAfter, refreshAfter, object : TypeReference<CachedValue<T>>() {}, supplier)
+
+    /**
+     * Updates the cache without checking if the value already exists.
+     */
+    fun <T> update(key: String, expireAfter: Duration, refreshAfter: Duration? = null, value: T): T {
+        return writeToCache(key, expireAfter, refreshAfter, value).value
+    }
 
     fun <T> cached(key: String, expireAfter: Duration, refreshAfter: Duration? = null, typeRef: TypeReference<CachedValue<T>>, supplier: Supplier<T>): T {
         var value: CachedValue<T>? = readFromCache(key, typeRef)
@@ -66,19 +72,23 @@ class SimpleRedisCache(
     fun invalidate(vararg keys: String) {
         val actualKeys = keys.map { "$pool:$it" }
         log.debug { "Invalidating [${actualKeys.joinToString(", ")}]" }
-        valueOperations.operations.unlink(actualKeys)
+        redisTemplate.unlink(actualKeys)
     }
 
     /**
      * Invalidates all keys in a pool.
      */
     fun invalidateAll() {
-        // TODO
+        val keys = redisTemplate.keys("$pool:*")
+        if (keys.isNotEmpty()) {
+            log.debug { "Invalidating [${keys.joinToString(", ")}]" }
+            redisTemplate.unlink(keys)
+        }
     }
 
     private fun <T> readFromCache(key: String, typeRef: TypeReference<CachedValue<T>>): CachedValue<T>? {
         val actualKey = "$pool:$key"
-        val serialized = valueOperations[actualKey] as String?
+        val serialized = valueOperations[actualKey]
         if (serialized != null) {
             log.debug { "(Hit) Read '$actualKey' from cache" }
             val cachedValue = objectMapper.readValue(serialized, typeRef)

@@ -36,8 +36,7 @@ class AccountService(
     private val cacheFactory: SimpleRedisCacheFactory
 ) : AccountOperations {
     private val log = KotlinLogging.logger {}
-    private val entityCache = cacheFactory.forPool("account:entity")
-    private val pageCache = cacheFactory.forPool("account:page")
+    private val accountCache = cacheFactory.forPool("account")
 
     @GetMapping(path = ["/"])
     override fun findAllAccounts(
@@ -45,15 +44,13 @@ class AccountService(
         @RequestParam(required = false, defaultValue = "10") @Min(5) @Max(100) pageSize: Int
     ): List<Account> {
         log.debug { "findAllAccounts(page = $page, pageSize = $pageSize)" }
-        return pageCache.cached(key = "[$page*$pageSize]", expireAfter = Duration.ofHours(1), refreshAfter = Duration.ofMinutes(45)) {
-            accountRepository.findAll(PageRequest.of(page, pageSize, AccountEntity.defaultSort)).toApis()
-        }
+        return accountRepository.findAll(PageRequest.of(page, pageSize, AccountEntity.defaultSort)).toApis()
     }
 
     @GetMapping(path = ["/{id}"])
     override fun getAccountById(@PathVariable("id") id: UUID): Account {
         log.debug { "getAccount('$id')" }
-        return entityCache.cached(key = id.toString(), expireAfter = Duration.ofHours(1), refreshAfter = Duration.ofMinutes(45)) {
+        return accountCache.cached(key = id.toString(), expireAfter = Duration.ofHours(1), refreshAfter = Duration.ofMinutes(45)) {
             accountRepository
                 .findById(id)
                 .map { it.toApi() }
@@ -64,7 +61,6 @@ class AccountService(
     @PostMapping(path = ["/"])
     override fun saveNewAccount(@Valid @RequestBody request: NewAccountRequest): Account {
         log.debug { "saveNewAccount('$request')" }
-        pageCache.invalidateAll()
         return accountRepository.save(request.toEntity()).toApi()
     }
 
@@ -72,8 +68,7 @@ class AccountService(
     @PatchMapping(path = ["/"])
     override fun updateExistingAccount(@Valid @RequestBody request: UpdateAccountRequest): Int {
         log.debug { "updateExistingAccount('$request')" }
-        entityCache.invalidate(request.id.toString())
-        pageCache.invalidateAll()
+        accountCache.invalidate(request.id.toString())
         return accountRepository.updateAccount(request.id, request.name!!)
     }
 }
