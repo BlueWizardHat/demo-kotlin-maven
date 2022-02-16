@@ -1,7 +1,7 @@
 package net.bluewizardhat.demoapp.template.mapping
 
 import net.bluewizardhat.demoapp.template.api.Account
-import net.bluewizardhat.demoapp.template.api.NewAccountRequest
+import net.bluewizardhat.demoapp.template.api.AccountRequest
 import net.bluewizardhat.demoapp.template.mapping.AccountMapper.toApi
 import net.bluewizardhat.demoapp.template.mapping.AccountMapper.toEntity
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -15,7 +15,7 @@ internal class AccountMapperTest {
     @Test
     internal fun testNewAccountRequestToEntity() {
         // Setup
-        val request = NewAccountRequest("AccountName")
+        val request = AccountRequest("AccountName")
         val expectedResult = AccountEntity(
             name = request.name ?: ""
         )

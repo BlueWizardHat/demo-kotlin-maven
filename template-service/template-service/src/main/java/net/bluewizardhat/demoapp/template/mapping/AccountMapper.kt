@@ -1,12 +1,14 @@
 package net.bluewizardhat.demoapp.template.mapping
 
 import net.bluewizardhat.demoapp.template.api.Account
-import net.bluewizardhat.demoapp.template.api.NewAccountRequest
+import net.bluewizardhat.demoapp.template.api.AccountRequest
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
 import java.time.OffsetDateTime
 import net.bluewizardhat.demoapp.template.database.entity.Account as AccountEntity
 
 object AccountMapper {
-    fun NewAccountRequest.toEntity(): AccountEntity {
+    fun AccountRequest.toEntity(): AccountEntity {
         val now = OffsetDateTime.now()
         return AccountEntity(
             name = name ?: throw IllegalArgumentException("name cannot be null"),
@@ -22,6 +24,9 @@ object AccountMapper {
             created = created,
             updated = updated
         )
+
+    fun Page<AccountEntity>.toApis(): Page<Account> =
+        PageImpl(this.content.toApis(), this.pageable, this.totalElements)
 
     fun Iterable<AccountEntity>.toApis(): List<Account> =
         this.map { it.toApi() }

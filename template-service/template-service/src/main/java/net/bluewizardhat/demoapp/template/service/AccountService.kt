@@ -4,12 +4,13 @@ import mu.KotlinLogging
 import net.bluewizardhat.common.cache.SimpleRedisCacheFactory
 import net.bluewizardhat.demoapp.template.api.Account
 import net.bluewizardhat.demoapp.template.api.AccountOperations
-import net.bluewizardhat.demoapp.template.api.NewAccountRequest
-import net.bluewizardhat.demoapp.template.api.UpdateAccountRequest
+import net.bluewizardhat.demoapp.template.api.AccountRequest
 import net.bluewizardhat.demoapp.template.database.repository.AccountRepository
 import net.bluewizardhat.demoapp.template.mapping.AccountMapper.toApi
 import net.bluewizardhat.demoapp.template.mapping.AccountMapper.toApis
 import net.bluewizardhat.demoapp.template.mapping.AccountMapper.toEntity
+import org.springframework.context.annotation.Profile
+import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
@@ -42,7 +43,7 @@ class AccountService(
     override fun findAllAccounts(
         @RequestParam(required = false, defaultValue = "0") @Min(0) page: Int,
         @RequestParam(required = false, defaultValue = "10") @Min(5) @Max(100) pageSize: Int
-    ): List<Account> {
+    ): Page<Account> {
         log.debug { "findAllAccounts(page = $page, pageSize = $pageSize)" }
         return accountRepository.findAll(PageRequest.of(page, pageSize, AccountEntity.defaultSort)).toApis()
     }
@@ -59,16 +60,23 @@ class AccountService(
     }
 
     @PostMapping(path = ["/"])
-    override fun saveNewAccount(@Valid @RequestBody request: NewAccountRequest): Account {
+    override fun saveNewAccount(@Valid @RequestBody request: AccountRequest): Account {
         log.debug { "saveNewAccount('$request')" }
         return accountRepository.save(request.toEntity()).toApi()
     }
 
     @Transactional
-    @PatchMapping(path = ["/"])
-    override fun updateExistingAccount(@Valid @RequestBody request: UpdateAccountRequest): Int {
-        log.debug { "updateExistingAccount('$request')" }
-        accountCache.invalidate(request.id.toString())
-        return accountRepository.updateAccount(request.id, request.name!!)
+    @PatchMapping(path = ["/{id}"])
+    override fun updateExistingAccount(@PathVariable("id") id: UUID, @Valid @RequestBody request: AccountRequest): Int {
+        log.debug { "updateExistingAccount('$id', '$request')" }
+        accountCache.invalidate(id.toString())
+        return accountRepository.updateAccount(id, request.name!!)
+    }
+
+    @Profile("local")
+    @PostMapping(path = ["/flushCache"])
+    fun flushCache() {
+        log.debug { "flushCache()" }
+        accountCache.invalidateAll()
     }
 }

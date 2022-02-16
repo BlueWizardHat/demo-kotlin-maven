@@ -6,20 +6,9 @@ import javax.validation.constraints.NotBlank
 import javax.validation.constraints.Size
 
 /**
- * Request to create a new Account.
+ * Request to create or update an Account.
  */
-data class NewAccountRequest(
-    @field:NotBlank
-    @field:Size(max = Account.nameLength)
-    val name: String?
-)
-
-/**
- * Request to update an existing Account.
- */
-data class UpdateAccountRequest(
-    val id: UUID,
-
+data class AccountRequest(
     @field:NotBlank
     @field:Size(max = Account.nameLength)
     val name: String?

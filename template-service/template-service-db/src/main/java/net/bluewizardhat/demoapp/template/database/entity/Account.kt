@@ -34,6 +34,6 @@ data class Account(
     var version: Long? = null
 ) {
     companion object {
-        val defaultSort: Sort = Sort.by(Sort.Order.desc("created"))
+        val defaultSort: Sort = Sort.by(Sort.Order.asc("created"))
     }
 }
