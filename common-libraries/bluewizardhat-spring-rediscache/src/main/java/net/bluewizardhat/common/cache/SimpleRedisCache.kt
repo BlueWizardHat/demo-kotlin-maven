@@ -4,18 +4,10 @@ import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import mu.KotlinLogging
 import org.springframework.data.redis.core.StringRedisTemplate
-import org.springframework.stereotype.Component
 import java.time.Duration
 import java.time.OffsetDateTime
+import java.util.concurrent.Executor
 import java.util.function.Supplier
-
-@Component
-class SimpleRedisCacheFactory(
-    private val redisTemplate: StringRedisTemplate,
-    private val objectMapper: ObjectMapper
-) {
-    fun forPool(pool: String) = SimpleRedisCache(redisTemplate, objectMapper, pool)
-}
 
 /**
  * A simple redis cache implementation.
@@ -34,7 +26,8 @@ class SimpleRedisCacheFactory(
 class SimpleRedisCache(
     private val redisTemplate: StringRedisTemplate,
     private val objectMapper: ObjectMapper,
-    private val pool: String
+    private val pool: String,
+    private val executor: Executor
 ) {
     private val log = KotlinLogging.logger {}
 
@@ -52,16 +45,21 @@ class SimpleRedisCache(
         cached(key, expireAfter, refreshAfter, object : TypeReference<CachedValue<T>>() {}, supplier)
 
     /**
-     * Updates the cache without checking if the value already exists.
+     * Updates or writes the cache without checking if the value already exists.
      */
-    fun <T> update(key: String, expireAfter: Duration, refreshAfter: Duration? = null, value: T): T {
-        return writeToCache(key, expireAfter, refreshAfter, value).value
+    fun <T> cache(key: String, expireAfter: Duration, refreshAfter: Duration? = null, value: T): T {
+        return writeToCache("$pool:$key", expireAfter, refreshAfter, value).value
     }
 
+    /**
+     * Visible only so it can be called from inline function.
+     * @see #cached(String, Duration, Duration, Supplier)
+     */
     fun <T> cached(key: String, expireAfter: Duration, refreshAfter: Duration? = null, typeRef: TypeReference<CachedValue<T>>, supplier: Supplier<T>): T {
-        var value: CachedValue<T>? = readFromCache(key, typeRef)
+        val actualKey = "$pool:$key"
+        var value: CachedValue<T>? = readFromCache(actualKey, expireAfter, refreshAfter, supplier, typeRef)
         if (value == null) {
-            value = writeToCache(key, expireAfter, refreshAfter, supplier.get())
+            value = writeToCache(actualKey, expireAfter, refreshAfter, supplier.get())
         }
         return value.value
     }
@@ -71,7 +69,7 @@ class SimpleRedisCache(
      */
     fun invalidate(vararg keys: String) {
         val actualKeys = keys.map { "$pool:$it" }
-        log.debug { "Invalidating [${actualKeys.joinToString(", ")}]" }
+        log.debug { "Invalidating ['${actualKeys.joinToString("', '")}']" }
         redisTemplate.unlink(actualKeys)
     }
 
@@ -81,47 +79,64 @@ class SimpleRedisCache(
     fun invalidateAll() {
         val keys = redisTemplate.keys("$pool:*")
         if (keys.isNotEmpty()) {
-            log.debug { "Invalidating [${keys.joinToString(", ")}]" }
+            log.debug { "Invalidating ['${keys.joinToString("', '")}']" }
             redisTemplate.unlink(keys)
         }
     }
 
-    private fun <T> readFromCache(key: String, typeRef: TypeReference<CachedValue<T>>): CachedValue<T>? {
-        val actualKey = "$pool:$key"
-        val serialized = valueOperations[actualKey]
+    private fun <T> readFromCache(key: String, expireAfter: Duration, refreshAfter: Duration?, supplier: Supplier<T>, typeRef: TypeReference<CachedValue<T>>): CachedValue<T>? {
+        val serialized = valueOperations[key]
         if (serialized != null) {
-            log.debug { "(Hit) Read '$actualKey' from cache" }
+            log.debug { "(Hit) Read '$key' from cache" }
             val cachedValue = objectMapper.readValue(serialized, typeRef)
             if (cachedValue.refreshAfter != null && OffsetDateTime.now().isAfter(cachedValue.refreshAfter)) {
-                log.debug { "Queueing '$actualKey' for refresh" }
-                // TODO queue value for refresh
+                queueUpdate(key, expireAfter, refreshAfter, supplier)
             }
             return cachedValue
         }
-        log.debug { "(Miss) Key '$actualKey' not found in cache" }
+        log.debug { "(Miss) Key '$key' not found in cache" }
         return null
     }
 
+    private fun <T> queueUpdate(key: String, expireAfter: Duration, refreshAfter: Duration?, supplier: Supplier<T>) {
+        doWithLock("$key.lock.refresh") {
+            log.debug { "Queueing '$key' for refresh" }
+            executor.execute {
+                try {
+                    doWithLock("$key.lock.refresh") {
+                        writeToCache(key, expireAfter, refreshAfter, supplier.get())
+                    }
+                } catch (e: Throwable) {
+                    log.error(e) { "Error while updating cache for '$key': ${e.message}" }
+                }
+            }
+        }
+    }
+
     private fun <T> writeToCache(key: String, expireAfter: Duration, refreshAfter: Duration?, value: T): CachedValue<T> {
-        val actualKey = "$pool:$key"
         val cachedValue = CachedValue(value, if (refreshAfter != null) OffsetDateTime.now().plus(refreshAfter) else null)
         if (value != null) {
-            val lock = "$actualKey.lock"
-            val lockAcquired = valueOperations.setIfAbsent(lock, "true") ?: false
-            if (lockAcquired) {
-                log.debug { "Acquired lock '$lock'" }
-                try {
-                    log.debug { "Writing '$actualKey' to cache, expires after $expireAfter" }
-                    valueOperations.set(actualKey, objectMapper.writeValueAsString(cachedValue), expireAfter)
-                } finally {
-                    log.debug { "Releasing lock '$lock'" }
-                    redisTemplate.unlink(lock)
-                }
-            } else {
-                log.debug { "Could not acquire lock '$lock', unable to update cache" }
+            doWithLock("$key.lock") {
+                log.debug { "Writing '$key' to cache, expires after $expireAfter" }
+                valueOperations.set(key, objectMapper.writeValueAsString(cachedValue), expireAfter)
             }
         }
         return cachedValue
+    }
+
+    private fun doWithLock(lock: String, task: Runnable) {
+        val lockAcquired = valueOperations.setIfAbsent(lock, "true") ?: false
+        if (lockAcquired) {
+            log.debug { "Acquired lock '$lock'" }
+            try {
+                task.run()
+            } finally {
+                log.debug { "Releasing lock '$lock'" }
+                redisTemplate.unlink(lock)
+            }
+        } else {
+            log.debug { "Could not acquire lock '$lock', unable to update cache" }
+        }
     }
 
     companion object {

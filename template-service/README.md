@@ -30,6 +30,5 @@ The service consist of several modules
 * template-service - the spring boot app that assembles all the modules into the service
 * template-service-api - the api that the service exposes
 * template-service-db - database functionality
-* template-service-cache - redis cache functionality
 * template-service-client - a rest client that can connect to the service (for use in other services)
 * template-service-integration-tests - test that run against the running template-service
