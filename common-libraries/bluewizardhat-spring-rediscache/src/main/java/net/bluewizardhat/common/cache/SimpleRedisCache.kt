@@ -41,27 +41,23 @@ class SimpleRedisCache(
      * @param refreshAfter after how long the object should be refreshed in the cache.
      * @param supplier is used to supply the value to return if not found in cache.
      */
-    inline fun <reified T> cached(key: String, expireAfter: Duration, refreshAfter: Duration? = null, supplier: Supplier<T>): T =
-        cached(key, expireAfter, refreshAfter, object : TypeReference<CachedValue<T>>() {}, supplier)
+    inline fun <reified T> cache(key: String, expireAfter: Duration, refreshAfter: Duration? = null, supplier: Supplier<T>): T =
+        cache(key, expireAfter, refreshAfter, object : TypeReference<CachedValue<T>>() {}, supplier)
 
     /**
      * Updates or writes the cache without checking if the value already exists.
      */
-    fun <T> cache(key: String, expireAfter: Duration, refreshAfter: Duration? = null, value: T): T {
-        return writeToCache("$pool:$key", expireAfter, refreshAfter, value).value
-    }
+    fun <T> cacheValue(key: String, expireAfter: Duration, refreshAfter: Duration? = null, value: T): T =
+        writeToCacheBg("$pool:$key", expireAfter, refreshAfter, value)
 
     /**
      * Visible only so it can be called from inline function.
-     * @see #cached(String, Duration, Duration, Supplier)
+     * @see #cache(String, Duration, Duration, Supplier)
      */
-    fun <T> cached(key: String, expireAfter: Duration, refreshAfter: Duration? = null, typeRef: TypeReference<CachedValue<T>>, supplier: Supplier<T>): T {
+    fun <T> cache(key: String, expireAfter: Duration, refreshAfter: Duration? = null, typeRef: TypeReference<CachedValue<T>>, supplier: Supplier<T>): T {
         val actualKey = "$pool:$key"
-        var value: CachedValue<T>? = readFromCache(actualKey, expireAfter, refreshAfter, supplier, typeRef)
-        if (value == null) {
-            value = writeToCache(actualKey, expireAfter, refreshAfter, supplier.get())
-        }
-        return value.value
+        return readFromCache(actualKey, expireAfter, refreshAfter, supplier, typeRef)
+            ?: writeToCacheBg(actualKey, expireAfter, refreshAfter, supplier.get())
     }
 
     /**
@@ -84,28 +80,33 @@ class SimpleRedisCache(
         }
     }
 
-    private fun <T> readFromCache(key: String, expireAfter: Duration, refreshAfter: Duration?, supplier: Supplier<T>, typeRef: TypeReference<CachedValue<T>>): CachedValue<T>? {
+    private fun <T> readFromCache(key: String, expireAfter: Duration, refreshAfter: Duration?, supplier: Supplier<T>, typeRef: TypeReference<CachedValue<T>>): T? {
         val serialized = valueOperations[key]
         if (serialized != null) {
             log.debug { "(Hit) Read '$key' from cache" }
             val cachedValue = objectMapper.readValue(serialized, typeRef)
             if (cachedValue.refreshAfter != null && OffsetDateTime.now().isAfter(cachedValue.refreshAfter)) {
-                queueUpdate(key, expireAfter, refreshAfter, supplier)
+                queueUpdate(key, expireAfter, refreshAfter, supplier, typeRef)
             }
-            return cachedValue
+            return cachedValue.value
         }
         log.debug { "(Miss) Key '$key' not found in cache" }
         return null
     }
 
-    private fun <T> queueUpdate(key: String, expireAfter: Duration, refreshAfter: Duration?, supplier: Supplier<T>) {
+    private fun <T> queueUpdate(key: String, expireAfter: Duration, refreshAfter: Duration?, supplier: Supplier<T>, typeRef: TypeReference<CachedValue<T>>) {
         doWithLock("$key.lock.refresh") {
             log.debug { "Queueing '$key' for refresh" }
             executor.execute {
                 try {
                     Thread.sleep(250) // ensure the parent thread has enough time to release the lock
                     doWithLock("$key.lock.refresh") {
-                        writeToCache(key, expireAfter, refreshAfter, supplier.get())
+                        val valueRefreshAfter = valueOperations[key]?.let {
+                            objectMapper.readValue(it, typeRef)
+                        }?.refreshAfter
+                        if (valueRefreshAfter == null || OffsetDateTime.now().isAfter(valueRefreshAfter)) {
+                            writeToCache(key, expireAfter, refreshAfter, supplier.get())
+                        }
                     }
                 } catch (e: Throwable) {
                     log.error(e) { "Error while updating cache for '$key': ${e.message}" }
@@ -114,15 +115,21 @@ class SimpleRedisCache(
         }
     }
 
-    private fun <T> writeToCache(key: String, expireAfter: Duration, refreshAfter: Duration?, value: T): CachedValue<T> {
-        val cachedValue = CachedValue(value, if (refreshAfter != null) OffsetDateTime.now().plus(refreshAfter) else null)
+    private fun <T> writeToCacheBg(key: String, expireAfter: Duration, refreshAfter: Duration?, value: T): T {
+        executor.execute {
+            writeToCache(key, expireAfter, refreshAfter, value)
+        }
+        return value
+    }
+
+    private fun <T> writeToCache(key: String, expireAfter: Duration, refreshAfter: Duration?, value: T) {
         if (value != null) {
             doWithLock("$key.lock") {
                 log.debug { "Writing '$key' to cache, expires after $expireAfter" }
+                val cachedValue = CachedValue(value, if (refreshAfter != null) OffsetDateTime.now().plus(refreshAfter) else null)
                 valueOperations.set(key, objectMapper.writeValueAsString(cachedValue), expireAfter)
             }
         }
-        return cachedValue
     }
 
     private fun doWithLock(lock: String, task: Runnable) {
