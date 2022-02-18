@@ -13,15 +13,16 @@ import java.util.function.Supplier
  * A simple redis cache implementation.
  *
  * * If a value is not found in the cache the supplier is called to fetch the value, the value will be written to cache
- * and the value is then returned.
+ * asynchronously and the value is returned.
  * * If a value is found in the cache, and it is newer than refreshAfter, the cached value will be returned.
  * * If a value is found in the cache, but it is older than refreshAfter, the cached value will be returned and the
  * supplier will be called asynchronously to refresh the value in the cache.
  *
- * If refreshAfter is longer than expireAfter or refreshAfter is null the object will simply expire without ever being refreshed.
+ * If refreshAfter is longer than expireAfter or refreshAfter is null the object will simply expire without ever being
+ * refreshed.
  *
- * Note if the value is not fetched before it expires it will also not be refreshed. To keep a value cached it will need
- * to be fetched periodically.
+ * Note if the value is not fetched before it expires it will also not be refreshed asynchronously. To keep a value
+ * cached it will need to be fetched periodically.
  */
 class SimpleRedisCache(
     private val redisTemplate: StringRedisTemplate,
@@ -81,16 +82,20 @@ class SimpleRedisCache(
     }
 
     private fun <T> readFromCache(key: String, expireAfter: Duration, refreshAfter: Duration?, supplier: Supplier<T>, typeRef: TypeReference<CachedValue<T>>): T? {
-        val serialized = valueOperations[key]
-        if (serialized != null) {
-            log.debug { "(Hit) Read '$key' from cache" }
-            val cachedValue = objectMapper.readValue(serialized, typeRef)
-            if (cachedValue.refreshAfter != null && OffsetDateTime.now().isAfter(cachedValue.refreshAfter)) {
-                queueUpdate(key, expireAfter, refreshAfter, supplier, typeRef)
+        try {
+            val serialized = valueOperations[key]
+            if (serialized != null) {
+                log.debug { "(Hit) Read '$key' from cache" }
+                val cachedValue = objectMapper.readValue(serialized, typeRef)
+                if (cachedValue.refreshAfter != null && OffsetDateTime.now().isAfter(cachedValue.refreshAfter)) {
+                    queueUpdate(key, expireAfter, refreshAfter, supplier, typeRef)
+                }
+                return cachedValue.value
             }
-            return cachedValue.value
+            log.debug { "(Miss) Key '$key' not found in cache" }
+        } catch (e: Exception) {
+            log.error(e) { "Error while reading '$key' from cache: ${e.message}" }
         }
-        log.debug { "(Miss) Key '$key' not found in cache" }
         return null
     }
 
