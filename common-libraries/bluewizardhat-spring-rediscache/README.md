@@ -17,8 +17,8 @@ asynchronously and the value is returned.
 If ```refreshAfter``` is longer than ```expireAfter``` or ```refreshAfter``` is ```null``` the object will simply expire
 without ever being refreshed.
 
-Note if the value is not fetched before it expires it will also not be refreshed asynchronously. To keep a value cached
-it will need to be fetched periodically.
+Note if the value is not requested before it expires it will also not be refreshed asynchronously. To keep a value cached
+it will need to be requested periodically.
 
 
 ### Usage
