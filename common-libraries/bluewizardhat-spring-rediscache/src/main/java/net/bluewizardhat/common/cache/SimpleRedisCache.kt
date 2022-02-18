@@ -57,8 +57,8 @@ class SimpleRedisCache(
      */
     fun <T> cache(key: String, expireAfter: Duration, refreshAfter: Duration? = null, typeRef: TypeReference<CachedValue<T>>, supplier: Supplier<T>): T {
         val actualKey = "$pool:$key"
-        return readFromCache(actualKey, expireAfter, refreshAfter, supplier, typeRef)
-            ?: writeToCacheBg(actualKey, expireAfter, refreshAfter, supplier.get())
+        val cachedValue = readFromCache(actualKey, expireAfter, refreshAfter, supplier, typeRef)
+        return if (cachedValue != null) cachedValue.value else writeToCacheBg(actualKey, expireAfter, refreshAfter, supplier.get())
     }
 
     /**
@@ -81,7 +81,7 @@ class SimpleRedisCache(
         }
     }
 
-    private fun <T> readFromCache(key: String, expireAfter: Duration, refreshAfter: Duration?, supplier: Supplier<T>, typeRef: TypeReference<CachedValue<T>>): T? {
+    private fun <T> readFromCache(key: String, expireAfter: Duration, refreshAfter: Duration?, supplier: Supplier<T>, typeRef: TypeReference<CachedValue<T>>): CachedValue<T>? {
         try {
             val serialized = valueOperations[key]
             if (serialized != null) {
@@ -90,7 +90,7 @@ class SimpleRedisCache(
                 if (cachedValue.refreshAfter != null && OffsetDateTime.now().isAfter(cachedValue.refreshAfter)) {
                     queueUpdate(key, expireAfter, refreshAfter, supplier, typeRef)
                 }
-                return cachedValue.value
+                return cachedValue
             }
             log.debug { "(Miss) Key '$key' not found in cache" }
         } catch (e: Exception) {
@@ -128,12 +128,10 @@ class SimpleRedisCache(
     }
 
     private fun <T> writeToCache(key: String, expireAfter: Duration, refreshAfter: Duration?, value: T) {
-        if (value != null) {
-            doWithLock("$key.lock") {
-                log.debug { "Writing '$key' to cache, expires after $expireAfter" }
-                val cachedValue = CachedValue(value, if (refreshAfter != null) OffsetDateTime.now().plus(refreshAfter) else null)
-                valueOperations.set(key, objectMapper.writeValueAsString(cachedValue), expireAfter)
-            }
+        doWithLock("$key.lock") {
+            log.debug { "Writing '$key' to cache, expires after $expireAfter" }
+            val cachedValue = CachedValue(value, if (refreshAfter != null) OffsetDateTime.now().plus(refreshAfter) else null)
+            valueOperations.set(key, objectMapper.writeValueAsString(cachedValue), expireAfter)
         }
     }
 
