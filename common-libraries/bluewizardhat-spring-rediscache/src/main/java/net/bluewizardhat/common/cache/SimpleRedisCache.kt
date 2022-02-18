@@ -53,7 +53,7 @@ class SimpleRedisCache(
 
     /**
      * Visible only so it can be called from inline function.
-     * @see #cache(String, Duration, Duration, Supplier)
+     * @see #cache(String, Duration, Duration?, Supplier)
      */
     fun <T> cache(key: String, expireAfter: Duration, refreshAfter: Duration? = null, typeRef: TypeReference<CachedValue<T>>, supplier: Supplier<T>): T {
         val actualKey = "$pool:$key"

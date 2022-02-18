@@ -52,6 +52,7 @@ class AccountService(
     override fun getAccountById(@PathVariable("id") id: UUID): Account {
         log.debug { "getAccount('$id')" }
         return accountCache.cache(key = id.toString(), expireAfter = Duration.ofHours(1), refreshAfter = Duration.ofMinutes(45)) {
+            log.debug { "Fetching account '$id' from database" }
             accountRepository
                 .findById(id)
                 .map { it.toApi() }
