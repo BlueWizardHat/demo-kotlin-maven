@@ -1,4 +1,4 @@
-package net.bluewizardhat.demoapp.template.service
+package net.bluewizardhat.demoapp.template.controller
 
 import mu.KotlinLogging
 import net.bluewizardhat.common.cache.SimpleRedisCacheFactory
@@ -32,7 +32,7 @@ import net.bluewizardhat.demoapp.template.database.entity.Account as AccountEnti
 @Validated
 @RestController
 @RequestMapping("/api/account")
-class AccountService(
+class AccountController(
     private val accountRepository: AccountRepository,
     private val cacheFactory: SimpleRedisCacheFactory
 ) : AccountOperations {
