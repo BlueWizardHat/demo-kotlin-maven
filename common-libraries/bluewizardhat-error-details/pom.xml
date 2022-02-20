@@ -7,18 +7,24 @@
 		<version>1.0-SNAPSHOT</version>
 	</parent>
 
-	<name>Common Libraries - Spring Exception Handling</name>
+	<name>Common Libraries - Error Details</name>
 	<groupId>net.bluewizardhat.common</groupId>
-	<artifactId>bluewizardhat-spring-exceptionhandlers</artifactId>
+	<artifactId>bluewizardhat-error-details</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<description>Common Libraries - Spring Exception Handling</description>
+	<description>Common Libraries - Error Details</description>
 
 	<dependencies>
+		<!--
 		<dependency>
-			<groupId>net.bluewizardhat.common</groupId>
-			<artifactId>bluewizardhat-errordetails</artifactId>
+			<groupId>javax.validation</groupId>
+			<artifactId>validation-api</artifactId>
+		</dependency>
+		-->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
 		</dependency>
 	</dependencies>
 

@@ -7,26 +7,18 @@
 		<version>1.0-SNAPSHOT</version>
 	</parent>
 
-	<name>Common Libraries - Redis Cache</name>
+	<name>Common Libraries - Spring Exception Handling</name>
 	<groupId>net.bluewizardhat.common</groupId>
-	<artifactId>bluewizardhat-spring-rediscache</artifactId>
+	<artifactId>bluewizardhat-exception-handlers</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<description>Common Libraries - Redis Cache</description>
+	<description>Common Libraries - Spring Exception Handling</description>
 
 	<dependencies>
 		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-annotations</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-redis</artifactId>
+			<groupId>net.bluewizardhat.common</groupId>
+			<artifactId>bluewizardhat-error-details</artifactId>
 		</dependency>
 	</dependencies>
 
