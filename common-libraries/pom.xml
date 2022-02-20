@@ -16,6 +16,7 @@
 	<description>Common Libraries - Parent POM</description>
 
 	<modules>
+		<module>bluewizardhat-logging-aspect</module>
 		<module>bluewizardhat-error-details</module>
 		<module>bluewizardhat-exception-handlers</module>
 		<module>bluewizardhat-redis-cache</module>
@@ -23,6 +24,11 @@
 
 	<dependencyManagement>
 		<dependencies>
+			<dependency>
+				<groupId>net.bluewizardhat.common</groupId>
+				<artifactId>bluewizardhat-logging-aspect</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 			<dependency>
 				<groupId>net.bluewizardhat.common</groupId>
 				<artifactId>bluewizardhat-error-details</artifactId>
