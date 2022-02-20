@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.stereotype.Component
+import java.time.Duration
 import java.util.concurrent.Executor
 
 @Component
@@ -32,8 +33,8 @@ class SimpleRedisCacheFactory(
      * context, etc. If the thread refreshing the cache need more than logging context or more advanced behaviour
      * you should supply your own Executor that can handle this.
      */
-    fun forPool(pool: String, executor: Executor = defaultExecutor()) =
-        SimpleRedisCache(redisTemplate, objectMapper, pool, executor)
+    fun forPool(pool: String, lockDuration: Duration = Duration.ofMinutes(5), executor: Executor = defaultExecutor()) =
+        SimpleRedisCache(redisTemplate, objectMapper, pool, lockDuration, executor)
 
     private var defaultExecutor: ThreadPoolTaskExecutor? = null
 

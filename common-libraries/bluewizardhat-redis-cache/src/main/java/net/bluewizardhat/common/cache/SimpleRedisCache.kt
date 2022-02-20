@@ -28,6 +28,7 @@ class SimpleRedisCache(
     private val redisTemplate: StringRedisTemplate,
     private val objectMapper: ObjectMapper,
     private val pool: String,
+    private val lockDuration: Duration,
     private val executor: Executor
 ) {
     private val log = KotlinLogging.logger {}
@@ -131,7 +132,7 @@ class SimpleRedisCache(
     }
 
     private fun doWithLock(lock: String, task: Runnable) {
-        val lockAcquired = valueOperations.setIfAbsent(lock, "true", Duration.ofMinutes(5)) ?: false
+        val lockAcquired = valueOperations.setIfAbsent(lock, "true", lockDuration) ?: false
         if (lockAcquired) {
             log.debug { "Acquired lock '$lock'" }
             try {
