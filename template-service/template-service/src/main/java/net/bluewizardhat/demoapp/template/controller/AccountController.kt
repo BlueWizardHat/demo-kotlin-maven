@@ -44,13 +44,11 @@ class AccountController(
         @RequestParam(required = false, defaultValue = "0") @Min(0) page: Int,
         @RequestParam(required = false, defaultValue = "10") @Min(5) @Max(100) pageSize: Int
     ): Page<Account> {
-        log.debug { "findAllAccounts(page = $page, pageSize = $pageSize)" }
         return accountRepository.findAll(PageRequest.of(page, pageSize, AccountEntity.defaultSort)).toApis()
     }
 
     @GetMapping(path = ["/{id}"])
     override fun getAccountById(@PathVariable("id") id: UUID): Account {
-        log.debug { "getAccount('$id')" }
         return accountCache.cache(key = id.toString(), expireAfter = Duration.ofHours(1), refreshAfter = Duration.ofMinutes(45)) {
             log.debug { "Fetching account '$id' from database" }
             accountRepository
@@ -62,14 +60,12 @@ class AccountController(
 
     @PostMapping(path = ["/"])
     override fun saveNewAccount(@Valid @RequestBody request: AccountRequest): Account {
-        log.debug { "saveNewAccount('$request')" }
         return accountRepository.save(request.toEntity()).toApi()
     }
 
     @Transactional
     @PatchMapping(path = ["/{id}"])
     override fun updateExistingAccount(@PathVariable("id") id: UUID, @Valid @RequestBody request: AccountRequest): Int {
-        log.debug { "updateExistingAccount('$id', '$request')" }
         accountCache.invalidate(id.toString())
         return accountRepository.updateAccount(id, request.name!!)
     }
@@ -77,7 +73,6 @@ class AccountController(
     @Profile("local")
     @PostMapping(path = ["/flushCache"])
     fun flushCache() {
-        log.debug { "flushCache()" }
         accountCache.invalidateAll()
     }
 }

@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.lang.reflect.Method
+import java.lang.reflect.Parameter
 import java.util.function.Supplier
 
 @Aspect
@@ -36,7 +37,7 @@ class LoggingAspect {
     fun annotatedMethod() {}
 
     @Around("methodOfAnnotatedClass() || annotatedMethod() || methodOfRestController()")
-    fun logInvocation(jp: ProceedingJoinPoint): Any {
+    fun logInvocation(jp: ProceedingJoinPoint): Any? {
         val startTime = System.currentTimeMillis()
         val args = jp.args
         val methodSignature = jp.signature as MethodSignature
@@ -50,8 +51,8 @@ class LoggingAspect {
         try {
             when {
                 args.isEmpty() -> log(logger, annotation, "Entering {}()", method.name)
-                annotation.logParameterValues -> log(logger, annotation, "Entering {}({})", method.name) { getParamNamesOrTypes(methodSignature, method).joinToString() }
-                else -> log(logger, annotation, "Entering {}({})", method.name) { getParamNamesOrTypes(methodSignature, method).joinToString() }
+                annotation.logParameterValues -> log(logger, annotation, "Entering {}({})", method.name) { getLoggableArgs(methodSignature, method, args) }
+                else -> log(logger, annotation, "Entering {}({})", method.name) { getParamNamesOrTypes(methodSignature, method) }
             }
 
             val result = jp.proceed()
@@ -62,8 +63,29 @@ class LoggingAspect {
         }
     }
 
-    private fun getParamNamesOrTypes(methodSignature: MethodSignature, method: Method): Array<String> {
-        return methodSignature.parameterNames ?: method.parameterTypes.map { it.simpleName }.toTypedArray()
+    private fun getParamNamesOrTypes(methodSignature: MethodSignature, method: Method): String =
+        methodSignature.parameterNames?.joinToString() ?: method.parameterTypes.joinToString { it.simpleName }
+
+    private fun getLoggableArgs(methodSignature: MethodSignature, method: Method, args: Array<Any?>): String {
+        val result = StringBuilder()
+        val parameters: Array<Parameter> = method.parameters
+        val paramNames: Array<String>? = methodSignature.parameterNames
+
+        for (i in args.indices) {
+            if (result.isNotEmpty()) result.append(",")
+            val sensitive = parameters[i].getAnnotation(Sensitive::class.java) != null
+            if (paramNames != null && paramNames.size > i) {
+                result.append(paramNames[i]).append("=")
+            }
+            args[i].let {
+                when {
+                    it == null -> result.append("<null>")
+                    sensitive -> result.append("<hidden>")
+                    else -> result.append("'").append(it.toString()).append("'")
+                }
+            }
+        }
+        return result.toString()
     }
 
     private fun log(logger: Logger, annotation: LogInvocation, msg: String, first: String, args: Supplier<String>) {
@@ -74,7 +96,7 @@ class LoggingAspect {
         }
     }
 
-    private fun log(logger: Logger, annotation: LogInvocation, msg: String, vararg args: Any) {
+    private fun log(logger: Logger, annotation: LogInvocation, msg: String, args: Any) {
         when (annotation.logLevel) {
             TRACE -> if (logger.isTraceEnabled) { logger.trace(msg, args) }
             DEBUG -> if (logger.isDebugEnabled) { logger.debug(msg, args) }
