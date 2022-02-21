@@ -10,10 +10,10 @@ import org.aspectj.lang.annotation.Pointcut
 import org.aspectj.lang.reflect.MethodSignature
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.lang.reflect.Method
 import java.lang.reflect.Parameter
+import java.util.LinkedList
 import java.util.function.Supplier
 
 @Aspect
@@ -24,8 +24,10 @@ class LoggingAspect {
         class LogInvocationDefaults
     }
 
-    @Value("\${net.bluewizardhat.common.logging.aspect.msgPrefix:true}")
-    private val msgPrefix: Boolean = false
+    private val resultHandlers: LinkedList<ResultHandler> =
+        LinkedList<ResultHandler>().apply {
+            add(DefaultResultHandler())
+        }
 
     @Pointcut("execution(public * (@org.springframework.web.bind.annotation.RestController *).*(..))")
     fun methodOfRestController() {}
@@ -35,6 +37,8 @@ class LoggingAspect {
 
     @Pointcut("execution(@net.bluewizardhat.common.logging.aspect.LogInvocation * *.*(..))")
     fun annotatedMethod() {}
+
+    fun registerResultHandler(resultHandler: ResultHandler) = resultHandlers.addFirst(resultHandler)
 
     @Around("methodOfAnnotatedClass() || annotatedMethod() || methodOfRestController()")
     fun logInvocation(jp: ProceedingJoinPoint): Any? {
@@ -50,12 +54,14 @@ class LoggingAspect {
 
         try {
             when {
-                args.isEmpty() -> log(logger, annotation, "Entering {}()", method.name)
-                annotation.logParameterValues -> log(logger, annotation, "Entering {}({})", method.name) { getLoggableArgs(methodSignature, method, args) }
-                else -> log(logger, annotation, "Entering {}({})", method.name) { getParamNamesOrTypes(methodSignature, method) }
+                args.isEmpty() -> log(logger, annotation, "-> Entering {}()", method.name)
+                annotation.logParameterValues -> log(logger, annotation, "-> Entering {}({})", method.name) { getLoggableArgs(methodSignature, method, args) }
+                else -> log(logger, annotation, "-> Entering {}({})", method.name) { getParamNamesOrTypes(methodSignature, method) }
             }
 
             val result = jp.proceed()
+            val millis = System.currentTimeMillis() - startTime
+            resultHandlers.find { it.canHandle(result) }?.handle(logger, annotation, method.name, millis, result)
 
             return result
         } catch (thr: Throwable) {
@@ -96,11 +102,11 @@ class LoggingAspect {
         }
     }
 
-    private fun log(logger: Logger, annotation: LogInvocation, msg: String, args: Any) {
+    private fun log(logger: Logger, annotation: LogInvocation, msg: String, vararg args: Any) {
         when (annotation.logLevel) {
-            TRACE -> if (logger.isTraceEnabled) { logger.trace(msg, args) }
-            DEBUG -> if (logger.isDebugEnabled) { logger.debug(msg, args) }
-            INFO -> if (logger.isInfoEnabled) { logger.info(msg, args) }
+            TRACE -> if (logger.isTraceEnabled) { logger.trace(msg, *args) }
+            DEBUG -> if (logger.isDebugEnabled) { logger.debug(msg, *args) }
+            INFO -> if (logger.isInfoEnabled) { logger.info(msg, *args) }
         }
     }
 }
