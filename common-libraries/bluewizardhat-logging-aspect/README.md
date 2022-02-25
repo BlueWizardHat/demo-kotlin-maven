@@ -1,4 +1,4 @@
-Common Libraries - Spring Exception Handlers
+Common Libraries - Logging Aspect
 ==================================================================================================
 
-Exception handlers.
+An aspect to log when certain methods are called.

@@ -1,20 +1,19 @@
 package net.bluewizardhat.common.logging.aspect
 
-import net.bluewizardhat.common.logging.aspect.LogInvocation.LogLevel.DEBUG
-import net.bluewizardhat.common.logging.aspect.LogInvocation.LogLevel.INFO
-import net.bluewizardhat.common.logging.aspect.LogInvocation.LogLevel.TRACE
+import net.bluewizardhat.common.logging.aspect.resulthandling.DefaultResultHandler
+import net.bluewizardhat.common.logging.aspect.resulthandling.FutureResultHandler
+import net.bluewizardhat.common.logging.aspect.resulthandling.ListenableFutureResultHandler
+import net.bluewizardhat.common.logging.aspect.resulthandling.ResultHandler
 import org.aspectj.lang.ProceedingJoinPoint
 import org.aspectj.lang.annotation.Around
 import org.aspectj.lang.annotation.Aspect
 import org.aspectj.lang.annotation.Pointcut
 import org.aspectj.lang.reflect.MethodSignature
-import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.lang.reflect.Method
 import java.lang.reflect.Parameter
 import java.util.LinkedList
-import java.util.function.Supplier
 
 @Aspect
 @Component
@@ -26,8 +25,10 @@ class LoggingAspect {
 
     private val resultHandlers: LinkedList<ResultHandler> =
         LinkedList<ResultHandler>().apply {
-            add(DefaultResultHandler())
+            add(ListenableFutureResultHandler())
+            add(FutureResultHandler())
         }
+    private val defaultResultHandler: DefaultResultHandler = DefaultResultHandler()
 
     @Pointcut("execution(public * (@org.springframework.web.bind.annotation.RestController *).*(..))")
     fun methodOfRestController() {}
@@ -52,18 +53,20 @@ class LoggingAspect {
             ?: method.declaringClass.getAnnotation(LogInvocation::class.java)
             ?: LogInvocationDefaults::class.java.getAnnotation(LogInvocation::class.java)
 
+        val log = LogWrapper(logger, annotation)
+
         try {
             when {
-                args.isEmpty() -> log(logger, annotation, "-> Entering {}()", method.name)
-                annotation.logParameterValues -> log(logger, annotation, "-> Entering {}({})", method.name) { getLoggableArgs(methodSignature, method, args) }
-                else -> log(logger, annotation, "-> Entering {}({})", method.name) { getParamNamesOrTypes(methodSignature, method) }
+                args.isEmpty() -> log.log("-> Entering {}()", method.name)
+                annotation.logParameterValues -> log.log("-> Entering {}({})", method.name) { getLoggableArgs(methodSignature, method, args) }
+                else -> log.log("-> Entering {}({})", method.name) { getParamNamesOrTypes(methodSignature, method) }
             }
 
             val result = jp.proceed()
             val millis = System.currentTimeMillis() - startTime
-            resultHandlers.find { it.canHandle(result) }?.handle(logger, annotation, method.name, millis, result)
 
-            return result
+            return resultHandlers.find { it.canHandle(result) }?.handle(log, method.name, millis, result)
+                ?: defaultResultHandler.handle(log, method.name, millis, result)
         } catch (thr: Throwable) {
             throw thr
         }
@@ -92,21 +95,5 @@ class LoggingAspect {
             }
         }
         return result.toString()
-    }
-
-    private fun log(logger: Logger, annotation: LogInvocation, msg: String, first: String, args: Supplier<String>) {
-        when (annotation.logLevel) {
-            TRACE -> if (logger.isTraceEnabled) { logger.trace(msg, first, args.get()) }
-            DEBUG -> if (logger.isDebugEnabled) { logger.debug(msg, first, args.get()) }
-            INFO -> if (logger.isInfoEnabled) { logger.info(msg, first, args.get()) }
-        }
-    }
-
-    private fun log(logger: Logger, annotation: LogInvocation, msg: String, vararg args: Any) {
-        when (annotation.logLevel) {
-            TRACE -> if (logger.isTraceEnabled) { logger.trace(msg, *args) }
-            DEBUG -> if (logger.isDebugEnabled) { logger.debug(msg, *args) }
-            INFO -> if (logger.isInfoEnabled) { logger.info(msg, *args) }
-        }
     }
 }
