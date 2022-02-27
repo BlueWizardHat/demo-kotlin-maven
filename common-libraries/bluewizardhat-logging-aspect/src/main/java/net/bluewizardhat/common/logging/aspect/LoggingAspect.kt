@@ -68,6 +68,7 @@ class LoggingAspect {
             return resultHandlers.find { it.canHandle(result) }?.handle(log, method.name, millis, result)
                 ?: defaultResultHandler.handle(log, method.name, millis, result)
         } catch (thr: Throwable) {
+            log.logErrorReturn(method.name, System.currentTimeMillis() - startTime, thr)
             throw thr
         }
     }
