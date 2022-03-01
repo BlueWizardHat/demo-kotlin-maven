@@ -57,7 +57,7 @@ class LogWrapper(
         if (depth == 2) {
             chain.append(" < ").append(lastCause.javaClass.simpleName)
         } else if (depth > 2) {
-            chain.append(" <-< ").append(lastCause.javaClass.simpleName)
+            chain.append(" << ").append(lastCause.javaClass.simpleName)
         }
 
         return Pair(lastCause.message ?: "<null>", chain.toString())
