@@ -187,8 +187,8 @@ class SimpleRedisCacheWeb(
     /**
      * Set cache-control headers for external caches.
      */
-    fun headers(response: HttpServletResponse): SimpleRedisCache {
-        return SimpleRedisCacheHeaders(redisTemplate, objectMapper, pool, lockDuration, executor, response)
+    fun headers(response: HttpServletResponse, vararg directives: DIRECTIVE): SimpleRedisCache {
+        return SimpleRedisCacheHeaders(redisTemplate, objectMapper, pool, lockDuration, executor, response, directives)
     }
 
     private class SimpleRedisCacheHeaders(
@@ -197,12 +197,58 @@ class SimpleRedisCacheWeb(
         pool: String,
         lockDuration: Duration,
         executor: Executor,
-        private val response: HttpServletResponse
+        private val response: HttpServletResponse,
+        private val directives: Array<out DIRECTIVE>
     ) : SimpleRedisCache(redisTemplate, objectMapper, pool, lockDuration, executor) {
         override fun <T> cache(key: String, expireAfter: Duration, refreshAfter: Duration?, typeRef: TypeReference<CachedValue<T>>, supplier: Supplier<T>): T {
             val cachedValue = cacheInternal(key, expireAfter, refreshAfter, typeRef, supplier)
-            response.addHeader("Cache-Control", "max-age=${expireAfter.seconds - ChronoUnit.SECONDS.between(cachedValue.cacheTime, OffsetDateTime.now())}")
+            val now = OffsetDateTime.now()
+            response.addHeader("Cache-Control", directives.joinToString(", ") { it.value(expireAfter.seconds, cachedValue.cacheTime, now) })
             return cachedValue.value
         }
+    }
+
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control
+     */
+    enum class DIRECTIVE {
+        maxAge {
+            override fun value(expireAfter: Long, cacheTime: OffsetDateTime, now: OffsetDateTime) =
+                "max-age=${expireAfter - ChronoUnit.SECONDS.between(cacheTime, OffsetDateTime.now())}"
+        },
+        sMaxAge {
+            override fun value(expireAfter: Long, cacheTime: OffsetDateTime, now: OffsetDateTime) =
+                "s-maxage=${expireAfter - ChronoUnit.SECONDS.between(cacheTime, OffsetDateTime.now())}"
+        },
+        noCache {
+            override fun value(expireAfter: Long, cacheTime: OffsetDateTime, now: OffsetDateTime) = "no-cache"
+        },
+        noStore {
+            override fun value(expireAfter: Long, cacheTime: OffsetDateTime, now: OffsetDateTime) = "no-store"
+        },
+        mustRevalidate {
+            override fun value(expireAfter: Long, cacheTime: OffsetDateTime, now: OffsetDateTime) = "must-revalidate"
+        },
+        proxyRevalidate {
+            override fun value(expireAfter: Long, cacheTime: OffsetDateTime, now: OffsetDateTime) = "proxy-revalidate"
+        },
+        privateD {
+            override fun value(expireAfter: Long, cacheTime: OffsetDateTime, now: OffsetDateTime) = "private"
+        },
+        publicD {
+            override fun value(expireAfter: Long, cacheTime: OffsetDateTime, now: OffsetDateTime) = "public"
+        },
+        mustUnderstand {
+            override fun value(expireAfter: Long, cacheTime: OffsetDateTime, now: OffsetDateTime) = "must-understand"
+        },
+        noTransform {
+            override fun value(expireAfter: Long, cacheTime: OffsetDateTime, now: OffsetDateTime) = "no-transform"
+        },
+        immutable {
+            override fun value(expireAfter: Long, cacheTime: OffsetDateTime, now: OffsetDateTime) = "immutable"
+        }
+        ;
+
+        abstract fun value(expireAfter: Long, cacheTime: OffsetDateTime, now: OffsetDateTime): String
     }
 }
