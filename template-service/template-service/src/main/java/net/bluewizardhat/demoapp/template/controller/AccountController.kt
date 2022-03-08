@@ -1,7 +1,7 @@
 package net.bluewizardhat.demoapp.template.controller
 
 import mu.KotlinLogging
-import net.bluewizardhat.common.cache.SimpleRedisCacheFactory
+import net.bluewizardhat.common.cache.SimpleRedisCacheFactoryWeb
 import net.bluewizardhat.demoapp.template.api.Account
 import net.bluewizardhat.demoapp.template.api.AccountOperations
 import net.bluewizardhat.demoapp.template.api.AccountRequest
@@ -34,7 +34,7 @@ import net.bluewizardhat.demoapp.template.database.entity.Account as AccountEnti
 @RequestMapping("/api/account")
 class AccountController(
     private val accountRepository: AccountRepository,
-    private val cacheFactory: SimpleRedisCacheFactory
+    private val cacheFactory: SimpleRedisCacheFactoryWeb
 ) : AccountOperations {
     private val log = KotlinLogging.logger {}
     private val accountCache = cacheFactory.forPool("account")
