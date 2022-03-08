@@ -172,22 +172,15 @@ class SimpleRedisCacheWeb(
     /**
      * Set headers for external caches to not cache the result.
      */
-    fun noCache(response: HttpServletResponse): SimpleRedisCache {
-        response.addHeader("Cache-Control", "no-cache")
-        return this
-    }
-    /**
-     * Set headers for external caches to not cache and not store the result.
-     */
-    fun noStore(response: HttpServletResponse): SimpleRedisCache {
-        response.addHeader("Cache-Control", "no-cache, no-store")
+    fun cacheControl(response: HttpServletResponse, vararg directives: NOCACHE_DIRECTIVES): SimpleRedisCache {
+        response.addHeader("Cache-Control", directives.joinToString(", ") { it.value })
         return this
     }
 
     /**
      * Set cache-control headers for external caches.
      */
-    fun headers(response: HttpServletResponse, vararg directives: DIRECTIVE): SimpleRedisCache {
+    fun cacheControl(response: HttpServletResponse, vararg directives: CACHE_DIRECTIVES): SimpleRedisCache {
         return SimpleRedisCacheHeaders(redisTemplate, objectMapper, pool, lockDuration, executor, response, directives)
     }
 
@@ -198,12 +191,12 @@ class SimpleRedisCacheWeb(
         lockDuration: Duration,
         executor: Executor,
         private val response: HttpServletResponse,
-        private val directives: Array<out DIRECTIVE>
+        private val directives: Array<out CACHE_DIRECTIVES>
     ) : SimpleRedisCache(redisTemplate, objectMapper, pool, lockDuration, executor) {
         override fun <T> cache(key: String, expireAfter: Duration, refreshAfter: Duration?, typeRef: TypeReference<CachedValue<T>>, supplier: Supplier<T>): T {
             val cachedValue = cacheInternal(key, expireAfter, refreshAfter, typeRef, supplier)
-            val now = OffsetDateTime.now()
-            response.addHeader("Cache-Control", directives.joinToString(", ") { it.value(expireAfter.seconds, cachedValue.cacheTime, now) })
+            response.addHeader("Cache-Control", directives.joinToString(", ") { it.value(expireAfter.seconds) })
+            response.addHeader("Age", "${ChronoUnit.SECONDS.between(cachedValue.cacheTime, OffsetDateTime.now())}")
             return cachedValue.value
         }
     }
@@ -211,44 +204,43 @@ class SimpleRedisCacheWeb(
     /**
      * https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control
      */
-    enum class DIRECTIVE {
+    enum class NOCACHE_DIRECTIVES(
+        val value: String
+    ) {
+        noCache("no-cache"),
+        noStore("no-store"),
+        mustUnderstand("must-understand")
+    }
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control
+     */
+    enum class CACHE_DIRECTIVES {
         maxAge {
-            override fun value(expireAfter: Long, cacheTime: OffsetDateTime, now: OffsetDateTime) =
-                "max-age=${expireAfter - ChronoUnit.SECONDS.between(cacheTime, OffsetDateTime.now())}"
+            override fun value(expireAfter: Long) = "max-age=$expireAfter"
         },
         sMaxAge {
-            override fun value(expireAfter: Long, cacheTime: OffsetDateTime, now: OffsetDateTime) =
-                "s-maxage=${expireAfter - ChronoUnit.SECONDS.between(cacheTime, OffsetDateTime.now())}"
-        },
-        noCache {
-            override fun value(expireAfter: Long, cacheTime: OffsetDateTime, now: OffsetDateTime) = "no-cache"
-        },
-        noStore {
-            override fun value(expireAfter: Long, cacheTime: OffsetDateTime, now: OffsetDateTime) = "no-store"
+            override fun value(expireAfter: Long) = "s-maxage=$expireAfter"
         },
         mustRevalidate {
-            override fun value(expireAfter: Long, cacheTime: OffsetDateTime, now: OffsetDateTime) = "must-revalidate"
+            override fun value(expireAfter: Long) = "must-revalidate"
         },
         proxyRevalidate {
-            override fun value(expireAfter: Long, cacheTime: OffsetDateTime, now: OffsetDateTime) = "proxy-revalidate"
+            override fun value(expireAfter: Long) = "proxy-revalidate"
         },
         privateD {
-            override fun value(expireAfter: Long, cacheTime: OffsetDateTime, now: OffsetDateTime) = "private"
+            override fun value(expireAfter: Long) = "private"
         },
         publicD {
-            override fun value(expireAfter: Long, cacheTime: OffsetDateTime, now: OffsetDateTime) = "public"
-        },
-        mustUnderstand {
-            override fun value(expireAfter: Long, cacheTime: OffsetDateTime, now: OffsetDateTime) = "must-understand"
+            override fun value(expireAfter: Long) = "public"
         },
         noTransform {
-            override fun value(expireAfter: Long, cacheTime: OffsetDateTime, now: OffsetDateTime) = "no-transform"
+            override fun value(expireAfter: Long) = "no-transform"
         },
         immutable {
-            override fun value(expireAfter: Long, cacheTime: OffsetDateTime, now: OffsetDateTime) = "immutable"
+            override fun value(expireAfter: Long) = "immutable"
         }
         ;
 
-        abstract fun value(expireAfter: Long, cacheTime: OffsetDateTime, now: OffsetDateTime): String
+        abstract fun value(expireAfter: Long): String
     }
 }
