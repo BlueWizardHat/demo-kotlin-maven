@@ -7,6 +7,7 @@ import net.bluewizardhat.common.cache.SimpleRedisCache.Companion.CachedValue
 import org.springframework.data.redis.core.StringRedisTemplate
 import java.time.Duration
 import java.time.OffsetDateTime
+import java.time.temporal.ChronoUnit
 import java.util.concurrent.Executor
 import java.util.function.Supplier
 import javax.servlet.http.HttpServletResponse
@@ -171,15 +172,22 @@ class SimpleRedisCacheWeb(
     /**
      * Set headers for external caches to not cache the result.
      */
-    fun noCacheHeaders(response: HttpServletResponse): SimpleRedisCache {
+    fun noCache(response: HttpServletResponse): SimpleRedisCache {
         response.addHeader("Cache-Control", "no-cache")
+        return this
+    }
+    /**
+     * Set headers for external caches to not cache and not store the result.
+     */
+    fun noStore(response: HttpServletResponse): SimpleRedisCache {
+        response.addHeader("Cache-Control", "no-cache, no-store")
         return this
     }
 
     /**
-     * Set cache headers for external caches.
+     * Set cache-control headers for external caches.
      */
-    fun cacheHeaders(response: HttpServletResponse): SimpleRedisCache {
+    fun headers(response: HttpServletResponse): SimpleRedisCache {
         return SimpleRedisCacheHeaders(redisTemplate, objectMapper, pool, lockDuration, executor, response)
     }
 
@@ -193,7 +201,7 @@ class SimpleRedisCacheWeb(
     ) : SimpleRedisCache(redisTemplate, objectMapper, pool, lockDuration, executor) {
         override fun <T> cache(key: String, expireAfter: Duration, refreshAfter: Duration?, typeRef: TypeReference<CachedValue<T>>, supplier: Supplier<T>): T {
             val cachedValue = cacheInternal(key, expireAfter, refreshAfter, typeRef, supplier)
-            // response.addHeader("Cache-Control", "")
+            response.addHeader("Cache-Control", "max-age=${expireAfter.seconds - ChronoUnit.SECONDS.between(cachedValue.cacheTime, OffsetDateTime.now())}")
             return cachedValue.value
         }
     }

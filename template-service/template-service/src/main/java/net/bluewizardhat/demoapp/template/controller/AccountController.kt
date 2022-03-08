@@ -3,7 +3,6 @@ package net.bluewizardhat.demoapp.template.controller
 import mu.KotlinLogging
 import net.bluewizardhat.common.cache.SimpleRedisCacheFactoryWeb
 import net.bluewizardhat.demoapp.template.api.Account
-import net.bluewizardhat.demoapp.template.api.AccountOperations
 import net.bluewizardhat.demoapp.template.api.AccountRequest
 import net.bluewizardhat.demoapp.template.database.repository.AccountRepository
 import net.bluewizardhat.demoapp.template.mapping.AccountMapper.toApi
@@ -23,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.Duration
 import java.util.UUID
+import javax.servlet.http.HttpServletResponse
 import javax.transaction.Transactional
 import javax.validation.Valid
 import javax.validation.constraints.Max
@@ -35,12 +35,12 @@ import net.bluewizardhat.demoapp.template.database.entity.Account as AccountEnti
 class AccountController(
     private val accountRepository: AccountRepository,
     private val cacheFactory: SimpleRedisCacheFactoryWeb
-) : AccountOperations {
+) {
     private val log = KotlinLogging.logger {}
     private val accountCache = cacheFactory.forPool("account")
 
     @GetMapping(path = ["/"])
-    override fun findAllAccounts(
+    fun findAllAccounts(
         @RequestParam(required = false, defaultValue = "0") @Min(0) page: Int,
         @RequestParam(required = false, defaultValue = "10") @Min(5) @Max(100) pageSize: Int
     ): Page<Account> {
@@ -48,24 +48,26 @@ class AccountController(
     }
 
     @GetMapping(path = ["/{id}"])
-    override fun getAccountById(@PathVariable("id") id: UUID): Account {
-        return accountCache.cache(key = id.toString(), expireAfter = Duration.ofHours(1), refreshAfter = Duration.ofMinutes(45)) {
-            log.debug { "Fetching account '$id' from database" }
-            accountRepository
-                .findById(id)
-                .map { it.toApi() }
-                .orElseThrow { IllegalArgumentException("Account with id '$id' not found") }
-        }
+    fun getAccountById(@PathVariable("id") id: UUID, response: HttpServletResponse): Account {
+        return accountCache
+            .headers(response)
+            .cache(key = id.toString(), expireAfter = Duration.ofHours(1), refreshAfter = Duration.ofMinutes(45)) {
+                log.debug { "Fetching account '$id' from database" }
+                accountRepository
+                    .findById(id)
+                    .map { it.toApi() }
+                    .orElseThrow { IllegalArgumentException("Account with id '$id' not found") }
+            }
     }
 
     @PostMapping(path = ["/"])
-    override fun saveNewAccount(@Valid @RequestBody request: AccountRequest): Account {
+    fun saveNewAccount(@Valid @RequestBody request: AccountRequest): Account {
         return accountRepository.save(request.toEntity()).toApi()
     }
 
     @Transactional
     @PatchMapping(path = ["/{id}"])
-    override fun updateExistingAccount(@PathVariable("id") id: UUID, @Valid @RequestBody request: AccountRequest): Int {
+    fun updateExistingAccount(@PathVariable("id") id: UUID, @Valid @RequestBody request: AccountRequest): Int {
         accountCache.invalidate(id.toString())
         return accountRepository.updateAccount(id, request.name!!)
     }
