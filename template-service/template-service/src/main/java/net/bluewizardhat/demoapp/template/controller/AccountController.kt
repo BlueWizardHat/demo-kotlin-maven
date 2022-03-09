@@ -2,7 +2,7 @@ package net.bluewizardhat.demoapp.template.controller
 
 import mu.KotlinLogging
 import net.bluewizardhat.common.cache.SimpleRedisCacheFactoryWeb
-import net.bluewizardhat.common.cache.SimpleRedisCacheWeb.CACHE_DIRECTIVES.maxAge
+import net.bluewizardhat.common.cache.SimpleRedisCacheWeb.CacheDirectives.maxAge
 import net.bluewizardhat.demoapp.template.api.Account
 import net.bluewizardhat.demoapp.template.api.AccountRequest
 import net.bluewizardhat.demoapp.template.database.repository.AccountRepository

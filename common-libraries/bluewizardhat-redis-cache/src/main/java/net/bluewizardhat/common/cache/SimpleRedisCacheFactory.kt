@@ -66,8 +66,8 @@ sealed class SimpleRedisCacheFactory(
 
 @Component
 @ConditionalOnMissingClass(value = ["javax.servlet.http.HttpServletResponse"])
-class SimpleRedisCacheFactoryNoWeb(
-    @Value("\${bluewizardhat.common.simplerediscache.corePoolSize:-0}")
+class SimpleRedisCacheFactoryBasic(
+    @Value("\${bluewizardhat.common.simplerediscache.corePoolSize:0}")
     private val corePoolSize: Int,
     @Value("\${bluewizardhat.common.simplerediscache.maxPoolSize:10}")
     private val maxPoolSize: Int,
@@ -87,13 +87,13 @@ class SimpleRedisCacheFactoryNoWeb(
      * you should supply your own Executor that can handle this.
      */
     override fun forPool(pool: String, lockDuration: Duration, executor: Executor): SimpleRedisCache =
-        SimpleRedisCache(redisTemplate, objectMapper, pool, lockDuration, executor)
+        SimpleRedisCacheBasic(redisTemplate, objectMapper, pool, lockDuration, executor)
 }
 
 @Component
 @ConditionalOnClass(name = ["javax.servlet.http.HttpServletResponse"])
 class SimpleRedisCacheFactoryWeb(
-    @Value("\${bluewizardhat.common.simplerediscache.corePoolSize:-0}")
+    @Value("\${bluewizardhat.common.simplerediscache.corePoolSize:0}")
     private val corePoolSize: Int,
     @Value("\${bluewizardhat.common.simplerediscache.maxPoolSize:10}")
     private val maxPoolSize: Int,

@@ -27,7 +27,7 @@ import javax.servlet.http.HttpServletResponse
  * Note if the value is not requested before it expires it will also not be refreshed asynchronously. To keep a value
  * cached it will need to be requested periodically.
  */
-open class SimpleRedisCache(
+sealed class SimpleRedisCache(
     private val redisTemplate: StringRedisTemplate,
     private val objectMapper: ObjectMapper,
     private val pool: String,
@@ -59,8 +59,7 @@ open class SimpleRedisCache(
      * Visible only so it can be called from inline function.
      * @see #cache(String, Duration, Duration?, Supplier)
      */
-    open fun <T> cache(key: String, expireAfter: Duration, refreshAfter: Duration? = null, typeRef: TypeReference<CachedValue<T>>, supplier: Supplier<T>): T =
-        cacheInternal(key, expireAfter, refreshAfter, typeRef, supplier).value
+    abstract fun <T> cache(key: String, expireAfter: Duration, refreshAfter: Duration? = null, typeRef: TypeReference<CachedValue<T>>, supplier: Supplier<T>): T
 
     protected fun <T> cacheInternal(key: String, expireAfter: Duration, refreshAfter: Duration?, typeRef: TypeReference<CachedValue<T>>, supplier: Supplier<T>): CachedValue<T> {
         val actualKey = "$pool:$key"
@@ -159,6 +158,17 @@ open class SimpleRedisCache(
     }
 }
 
+class SimpleRedisCacheBasic(
+    redisTemplate: StringRedisTemplate,
+    objectMapper: ObjectMapper,
+    pool: String,
+    lockDuration: Duration,
+    executor: Executor
+) : SimpleRedisCache(redisTemplate, objectMapper, pool, lockDuration, executor) {
+    override fun <T> cache(key: String, expireAfter: Duration, refreshAfter: Duration?, typeRef: TypeReference<CachedValue<T>>, supplier: Supplier<T>): T =
+        cacheInternal(key, expireAfter, refreshAfter, typeRef, supplier).value
+}
+
 /**
  * Extension of SimpleRedisCache that provides the ability to set http cache headers.
  */
@@ -169,10 +179,13 @@ class SimpleRedisCacheWeb(
     private val lockDuration: Duration,
     private val executor: Executor
 ) : SimpleRedisCache(redisTemplate, objectMapper, pool, lockDuration, executor) {
+    override fun <T> cache(key: String, expireAfter: Duration, refreshAfter: Duration?, typeRef: TypeReference<CachedValue<T>>, supplier: Supplier<T>): T =
+        cacheInternal(key, expireAfter, refreshAfter, typeRef, supplier).value
+
     /**
      * Set headers for external caches to not cache the result.
      */
-    fun cacheControl(response: HttpServletResponse, vararg directives: NOCACHE_DIRECTIVES): SimpleRedisCache {
+    fun cacheControl(response: HttpServletResponse, vararg directives: NoCacheDirectives): SimpleRedisCache {
         response.addHeader("Cache-Control", directives.joinToString(", ") { it.value })
         return this
     }
@@ -180,7 +193,7 @@ class SimpleRedisCacheWeb(
     /**
      * Set cache-control headers for external caches.
      */
-    fun cacheControl(response: HttpServletResponse, vararg directives: CACHE_DIRECTIVES): SimpleRedisCache {
+    fun cacheControl(response: HttpServletResponse, vararg directives: CacheDirectives): SimpleRedisCache {
         return SimpleRedisCacheHeaders(redisTemplate, objectMapper, pool, lockDuration, executor, response, directives)
     }
 
@@ -191,7 +204,7 @@ class SimpleRedisCacheWeb(
         lockDuration: Duration,
         executor: Executor,
         private val response: HttpServletResponse,
-        private val directives: Array<out CACHE_DIRECTIVES>
+        private val directives: Array<out CacheDirectives>
     ) : SimpleRedisCache(redisTemplate, objectMapper, pool, lockDuration, executor) {
         override fun <T> cache(key: String, expireAfter: Duration, refreshAfter: Duration?, typeRef: TypeReference<CachedValue<T>>, supplier: Supplier<T>): T {
             val cachedValue = cacheInternal(key, expireAfter, refreshAfter, typeRef, supplier)
@@ -204,7 +217,7 @@ class SimpleRedisCacheWeb(
     /**
      * https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control
      */
-    enum class NOCACHE_DIRECTIVES(
+    enum class NoCacheDirectives(
         val value: String
     ) {
         noCache("no-cache"),
@@ -214,7 +227,7 @@ class SimpleRedisCacheWeb(
     /**
      * https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control
      */
-    enum class CACHE_DIRECTIVES {
+    enum class CacheDirectives {
         maxAge {
             override fun value(expireAfter: Long) = "max-age=$expireAfter"
         },
