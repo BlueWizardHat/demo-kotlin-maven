@@ -219,7 +219,6 @@ class SimpleRedisCacheWeb(
             val cachedValue = cacheInternal(key, expireAfter, refreshAfter, typeRef, supplier)
             val age = ChronoUnit.SECONDS.between(cachedValue.cacheTime, OffsetDateTime.now())
             response.addHeader("Cache-Control", directives.joinToString(", ") { it.value(expireAfter.seconds, age, refreshAfter?.seconds) })
-            response.addHeader("Age", "$age")
             return cachedValue.value
         }
     }
@@ -229,74 +228,82 @@ class SimpleRedisCacheWeb(
      */
     enum class NoCacheDirectives(val value: String) {
         /** Adds the "no-cache" directive */
-        noCache("no-cache"),
+        NoCache("no-cache"),
         /** Adds the "no-store" directive */
-        noStore("no-store"),
+        NoStore("no-store"),
         /** Adds the "max-age" directive with a value of 0 */
-        maxAge0("max-age=0"),
+        MaxAge0("max-age=0"),
         /** Adds the "s-maxage" directive with a value of 0 */
-        sMaxAge0("s-maxage=0"),
+        SMaxAge0("s-maxage=0"),
         /** Adds the "must-revalidate" directive */
-        mustRevalidate("must-revalidate")
+        MustRevalidate("must-revalidate")
     }
     /**
      * https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control
      */
     enum class CacheDirectives {
         /** Adds the "max-age" directive with a value of expireAfter */
-        maxAgeExpireAfter {
+        MaxAgeExpireAfter {
             override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) = "max-age=$expireAfter"
         },
         /** Adds the "max-age" directive with a value of expireAfter minus age of the cached object */
-        maxAgeExpireAfterAged {
+        MaxAgeExpireAfterAged {
             override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) = "max-age=${expireAfter - age}"
         },
         /** Adds the "max-age" directive with a value of refreshAfter */
-        maxAgeRefreshAfter {
-            override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) = "max-age=$refreshAfter"
+        MaxAgeRefreshAfter {
+            override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) =
+                refreshAfter?.let { "max-age=$refreshAfter" }
+                    ?: throw IllegalArgumentException("When using MaxAgeRefreshAfter refreshAfter cannot be null")
         },
         /** Adds the "max-age" directive with a value of refreshAfter minus age of the cached object */
-        maxAgeRefreshAfterAged {
-            override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) = "max-age=${(refreshAfter ?: age) - age}"
+        MaxAgeRefreshAfterAged {
+            override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) =
+                refreshAfter?.let { "max-age=${it - age}" }
+                    ?: throw IllegalArgumentException("When using MaxAgeRefreshAfterAged refreshAfter cannot be null")
         },
         /** Adds the "s-maxage" directive with a value of expireAfter */
-        sMaxAgeExpireAfter {
+        SMaxAgeExpireAfter {
             override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) = "s-maxage=$expireAfter"
         },
         /** Adds the "s-maxage" directive with a value of expireAfter minus age of the cached object */
-        sMaxAgeExpireAfterAged {
+        SMaxAgeExpireAfterAged {
             override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) = "s-maxage=${expireAfter - age}"
         },
         /** Adds the "s-maxage" directive with a value of refreshAfter */
-        sMaxAgeRefreshAfter {
-            override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) = "s-maxage=$$refreshAfter"
+        SMaxAgeRefreshAfter {
+            override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) =
+                refreshAfter?.let { "s-maxage=$refreshAfter" }
+                    ?: throw IllegalArgumentException("When using SMaxAgeRefreshAfter refreshAfter cannot be null")
         },
         /** Adds the "s-maxage" directive with a value of refreshAfter minus age of the cached object */
-        sMaxAgeRefreshAfterAged {
-            override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) = "s-maxage=$${(refreshAfter ?: age) - age}"
+        SMaxAgeRefreshAfterAged {
+            override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) =
+                refreshAfter?.let { "s-maxage=${it - age}" }
+                    ?: throw IllegalArgumentException("When using SMaxAgeRefreshAfterAged refreshAfter cannot be null")
         },
         /** Adds the "must-revalidate" directive */
-        mustRevalidate {
+        MustRevalidate {
             override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) = "must-revalidate"
         },
         /** Adds the "proxy-revalidate" directive */
-        proxyRevalidate {
+        ProxyRevalidate {
             override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) = "proxy-revalidate"
         },
         /** Adds the "private" directive */
-        privateCache {
+        Private {
             override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) = "private"
         },
         /** Adds the "public" directive */
-        publicCache {
+        Public {
             override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) = "public"
         },
         /** Adds the "no-transform" directive */
-        noTransform {
+        NoTransform {
             override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) = "no-transform"
         },
         /** Adds the "immutable" directive */
-        immutable {
+        Immutable {
             override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) = "immutable"
         }
         ;
