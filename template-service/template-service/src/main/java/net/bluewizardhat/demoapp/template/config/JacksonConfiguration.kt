@@ -15,7 +15,7 @@ class JacksonConfiguration {
 
     @Bean
     fun defaultObjectMapper(): ObjectMapper {
-        log.info { "Creating default ObjectMapper" }
+        log.info("Creating default ObjectMapper")
         return ObjectMapper()
             .registerModule(JavaTimeModule())
             .registerModule(ParameterNamesModule())

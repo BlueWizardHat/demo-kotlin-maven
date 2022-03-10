@@ -2,7 +2,12 @@ package net.bluewizardhat.demoapp.template.controller
 
 import mu.KotlinLogging
 import net.bluewizardhat.common.cache.SimpleRedisCacheFactoryWeb
-import net.bluewizardhat.common.cache.SimpleRedisCacheWeb.CacheDirectives.maxAge
+import net.bluewizardhat.common.cache.SimpleRedisCacheWeb.CacheDirectives.maxAgeExpireAfter
+import net.bluewizardhat.common.cache.SimpleRedisCacheWeb.CacheDirectives.publicCache
+import net.bluewizardhat.common.cache.SimpleRedisCacheWeb.NoCacheDirectives.maxAge0
+import net.bluewizardhat.common.cache.SimpleRedisCacheWeb.NoCacheDirectives.mustRevalidate
+import net.bluewizardhat.common.cache.SimpleRedisCacheWeb.NoCacheDirectives.noCache
+import net.bluewizardhat.common.cache.SimpleRedisCacheWeb.NoCacheDirectives.noStore
 import net.bluewizardhat.demoapp.template.api.Account
 import net.bluewizardhat.demoapp.template.api.AccountRequest
 import net.bluewizardhat.demoapp.template.database.repository.AccountRepository
@@ -12,6 +17,7 @@ import net.bluewizardhat.demoapp.template.mapping.AccountMapper.toEntity
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
+import org.springframework.http.HttpStatus
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
@@ -20,6 +26,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import java.time.Duration
 import java.util.UUID
@@ -51,7 +58,7 @@ class AccountController(
     @GetMapping(path = ["/{id}"])
     fun getAccountById(@PathVariable("id") id: UUID, response: HttpServletResponse): Account {
         return accountCache
-            .cacheControl(response, maxAge)
+            .cacheControl(response, noCache, noStore, maxAge0, mustRevalidate)
             .cache(key = id.toString(), expireAfter = Duration.ofHours(1), refreshAfter = Duration.ofMinutes(45)) {
                 log.debug { "Fetching account '$id' from database" }
                 accountRepository
@@ -61,6 +68,7 @@ class AccountController(
             }
     }
 
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(path = ["/"])
     fun saveNewAccount(@Valid @RequestBody request: AccountRequest): Account {
         return accountRepository.save(request.toEntity()).toApi()

@@ -183,17 +183,26 @@ class SimpleRedisCacheWeb(
         cacheInternal(key, expireAfter, refreshAfter, typeRef, supplier).value
 
     /**
-     * Set headers for external caches to not cache the result.
+     * Set cache-control header to limit external caching.
      */
     fun cacheControl(response: HttpServletResponse, vararg directives: NoCacheDirectives): SimpleRedisCache {
+        if (directives.isEmpty()) {
+            throw IllegalArgumentException("directives for cache-control header should not be empty")
+        }
         response.addHeader("Cache-Control", directives.joinToString(", ") { it.value })
         return this
     }
 
     /**
      * Set cache-control headers for external caches.
+     *
+     * Note the redis cache cannot invalidate external caches, so for data you may need to invalidate
+     * it might be good idea to add non-caching directives instead of caching ones.
      */
     fun cacheControl(response: HttpServletResponse, vararg directives: CacheDirectives): SimpleRedisCache {
+        if (directives.isEmpty()) {
+            throw IllegalArgumentException("directives for cache-control header should not be empty")
+        }
         return SimpleRedisCacheHeaders(redisTemplate, objectMapper, pool, lockDuration, executor, response, directives)
     }
 
@@ -208,8 +217,9 @@ class SimpleRedisCacheWeb(
     ) : SimpleRedisCache(redisTemplate, objectMapper, pool, lockDuration, executor) {
         override fun <T> cache(key: String, expireAfter: Duration, refreshAfter: Duration?, typeRef: TypeReference<CachedValue<T>>, supplier: Supplier<T>): T {
             val cachedValue = cacheInternal(key, expireAfter, refreshAfter, typeRef, supplier)
-            response.addHeader("Cache-Control", directives.joinToString(", ") { it.value(expireAfter.seconds) })
-            response.addHeader("Age", "${ChronoUnit.SECONDS.between(cachedValue.cacheTime, OffsetDateTime.now())}")
+            val age = ChronoUnit.SECONDS.between(cachedValue.cacheTime, OffsetDateTime.now())
+            response.addHeader("Cache-Control", directives.joinToString(", ") { it.value(expireAfter.seconds, age, refreshAfter?.seconds) })
+            response.addHeader("Age", "$age")
             return cachedValue.value
         }
     }
@@ -217,43 +227,80 @@ class SimpleRedisCacheWeb(
     /**
      * https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control
      */
-    enum class NoCacheDirectives(
-        val value: String
-    ) {
+    enum class NoCacheDirectives(val value: String) {
+        /** Adds the "no-cache" directive */
         noCache("no-cache"),
+        /** Adds the "no-store" directive */
         noStore("no-store"),
-        mustUnderstand("must-understand")
+        /** Adds the "max-age" directive with a value of 0 */
+        maxAge0("max-age=0"),
+        /** Adds the "s-maxage" directive with a value of 0 */
+        sMaxAge0("s-maxage=0"),
+        /** Adds the "must-revalidate" directive */
+        mustRevalidate("must-revalidate")
     }
     /**
      * https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control
      */
     enum class CacheDirectives {
-        maxAge {
-            override fun value(expireAfter: Long) = "max-age=$expireAfter"
+        /** Adds the "max-age" directive with a value of expireAfter */
+        maxAgeExpireAfter {
+            override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) = "max-age=$expireAfter"
         },
-        sMaxAge {
-            override fun value(expireAfter: Long) = "s-maxage=$expireAfter"
+        /** Adds the "max-age" directive with a value of expireAfter minus age of the cached object */
+        maxAgeExpireAfterAged {
+            override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) = "max-age=${expireAfter - age}"
         },
+        /** Adds the "max-age" directive with a value of refreshAfter */
+        maxAgeRefreshAfter {
+            override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) = "max-age=$refreshAfter"
+        },
+        /** Adds the "max-age" directive with a value of refreshAfter minus age of the cached object */
+        maxAgeRefreshAfterAged {
+            override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) = "max-age=${(refreshAfter ?: age) - age}"
+        },
+        /** Adds the "s-maxage" directive with a value of expireAfter */
+        sMaxAgeExpireAfter {
+            override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) = "s-maxage=$expireAfter"
+        },
+        /** Adds the "s-maxage" directive with a value of expireAfter minus age of the cached object */
+        sMaxAgeExpireAfterAged {
+            override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) = "s-maxage=${expireAfter - age}"
+        },
+        /** Adds the "s-maxage" directive with a value of refreshAfter */
+        sMaxAgeRefreshAfter {
+            override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) = "s-maxage=$$refreshAfter"
+        },
+        /** Adds the "s-maxage" directive with a value of refreshAfter minus age of the cached object */
+        sMaxAgeRefreshAfterAged {
+            override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) = "s-maxage=$${(refreshAfter ?: age) - age}"
+        },
+        /** Adds the "must-revalidate" directive */
         mustRevalidate {
-            override fun value(expireAfter: Long) = "must-revalidate"
+            override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) = "must-revalidate"
         },
+        /** Adds the "proxy-revalidate" directive */
         proxyRevalidate {
-            override fun value(expireAfter: Long) = "proxy-revalidate"
+            override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) = "proxy-revalidate"
         },
-        privateD {
-            override fun value(expireAfter: Long) = "private"
+        /** Adds the "private" directive */
+        privateCache {
+            override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) = "private"
         },
-        publicD {
-            override fun value(expireAfter: Long) = "public"
+        /** Adds the "public" directive */
+        publicCache {
+            override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) = "public"
         },
+        /** Adds the "no-transform" directive */
         noTransform {
-            override fun value(expireAfter: Long) = "no-transform"
+            override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) = "no-transform"
         },
+        /** Adds the "immutable" directive */
         immutable {
-            override fun value(expireAfter: Long) = "immutable"
+            override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) = "immutable"
         }
         ;
 
-        abstract fun value(expireAfter: Long): String
+        abstract fun value(expireAfter: Long, age: Long, refreshAfter: Long?): String
     }
 }
