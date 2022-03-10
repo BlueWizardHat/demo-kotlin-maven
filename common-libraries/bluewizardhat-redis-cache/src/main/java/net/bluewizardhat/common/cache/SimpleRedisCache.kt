@@ -183,7 +183,8 @@ class SimpleRedisCacheWeb(
         cacheInternal(key, expireAfter, refreshAfter, typeRef, supplier).value
 
     /**
-     * Set cache-control header to limit external caching.
+     * Set cache-control header to limit external caching. When using NoCacheDirectives the header is set
+     * immediately.
      */
     fun cacheControl(response: HttpServletResponse, vararg directives: NoCacheDirectives): SimpleRedisCache {
         if (directives.isEmpty()) {

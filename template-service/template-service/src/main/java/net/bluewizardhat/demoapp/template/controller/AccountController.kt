@@ -48,8 +48,10 @@ class AccountController(
     @GetMapping(path = ["/"])
     fun findAllAccounts(
         @RequestParam(required = false, defaultValue = "0") @Min(0) page: Int,
-        @RequestParam(required = false, defaultValue = "10") @Min(5) @Max(100) pageSize: Int
+        @RequestParam(required = false, defaultValue = "10") @Min(5) @Max(100) pageSize: Int,
+        response: HttpServletResponse
     ): Page<Account> {
+        accountCache.cacheControl(response, NoCache, NoStore, MaxAge0, MustRevalidate)
         return accountRepository.findAll(PageRequest.of(page, pageSize, AccountEntity.defaultSort)).toApis()
     }
 

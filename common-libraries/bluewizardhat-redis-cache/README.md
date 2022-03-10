@@ -57,8 +57,9 @@ supply a value:
 
 #### Web / HTTP Caching / Cache-Control header
 
-If you are making a web app instead of autowiring ```SimpleRedisCacheFactory``` you can autowire ```SimpleRedisCacheFactoryWeb```
-which will give you the option to also generate a ```Cache-Control``` header.
+If you are making a web app - instead of autowiring ```SimpleRedisCacheFactory``` you can autowire ```SimpleRedisCacheFactoryWeb```
+which will give you a ```SimpleRedisCacheWeb``` from the ```forPool``` method. ```SimpleRedisCacheWeb``` contains the
+option to also generate a ```Cache-Control``` header on a ```HttpServletResponse``` when using the cache.
 
 For example:
 ```kotlin
