@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.data.redis.core.StringRedisTemplate
 
 @Configuration
-class RedisCacheConfiguration(
+class RedisCacheAutoConfiguration(
     @Value("\${bluewizardhat.common.simplerediscache.corePoolSize:0}")
     private val corePoolSize: Int,
     @Value("\${bluewizardhat.common.simplerediscache.maxPoolSize:10}")

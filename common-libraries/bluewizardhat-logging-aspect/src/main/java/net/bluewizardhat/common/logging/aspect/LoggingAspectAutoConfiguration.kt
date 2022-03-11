@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration
 
 @Configuration
 @ComponentScan
-class LoggingAspectConfiguration {
+class LoggingAspectAutoConfiguration {
     @Bean
     @ConditionalOnClass(name = ["org.springframework.web.context.request.async.DeferredResult"])
     fun loadDeferredResultResultHandler(aspect: LoggingAspect): DeferredResultResultHandler {
