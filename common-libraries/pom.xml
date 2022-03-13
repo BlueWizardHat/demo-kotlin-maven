@@ -22,6 +22,10 @@
 		<module>bluewizardhat-redis-cache</module>
 	</modules>
 
+	<properties>
+		<dokka.version>1.6.10</dokka.version>
+	</properties>
+
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
@@ -52,15 +56,24 @@
 			<plugin>
 				<groupId>org.jetbrains.dokka</groupId>
 				<artifactId>dokka-maven-plugin</artifactId>
-				<version>1.6.10</version>
+				<version>${dokka.version}</version>
 				<executions>
 					<execution>
-						<phase>prepare-package</phase>
+						<phase>pre-site</phase>
 						<goals>
 							<goal>javadocJar</goal>
 						</goals>
 					</execution>
 				</executions>
+				<configuration>
+					<dokkaPlugins>
+						<plugin>
+							<groupId>org.jetbrains.dokka</groupId>
+							<artifactId>kotlin-as-java-plugin</artifactId>
+							<version>${dokka.version}</version>
+						</plugin>
+					</dokkaPlugins>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
