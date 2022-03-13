@@ -55,6 +55,19 @@ supply a value:
         }
 ```
 
+Alternatively if you want to control the ```expireAfter``` and ```refreshAfter``` from inside the code that generates the
+value you can return a ```ValueToCache``` object:
+```kotlin
+    fun expensiveMethod(id: String): MyObject =
+        cache.cache(key = id) {
+            // code..
+            ValueToCache(value, expireAfter, refreshAfter)
+        }
+```
+
+As before ```refreshAfter``` is optional and defaults to ```null``` so can be omitted.
+
+
 #### Web / HTTP Caching / Cache-Control header
 
 If you are making a web app - instead of autowiring ```SimpleRedisCacheFactory``` you can autowire ```SimpleRedisCacheFactoryWeb```
