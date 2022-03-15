@@ -1,6 +1,5 @@
 package net.bluewizardhat.common.cache
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
@@ -18,8 +17,7 @@ class RedisCacheAutoConfiguration(
     @Value("\${bluewizardhat.common.simplerediscache.queueCapacity:20}")
     private val queueCapacity: Int,
 
-    private val redisTemplate: StringRedisTemplate,
-    private val objectMapper: ObjectMapper
+    private val redisTemplate: StringRedisTemplate
 ) {
     private val log = KotlinLogging.logger {}
 
@@ -27,13 +25,13 @@ class RedisCacheAutoConfiguration(
     @ConditionalOnMissingClass(value = ["javax.servlet.http.HttpServletResponse"])
     fun simpleRedisCacheFactory(): SimpleRedisCacheFactory {
         log.info("Creating SimpleRedisCacheFactory (Non-Web)")
-        return SimpleRedisCacheFactoryBasic(corePoolSize, maxPoolSize, queueCapacity, redisTemplate, objectMapper)
+        return SimpleRedisCacheFactoryBasic(corePoolSize, maxPoolSize, queueCapacity, redisTemplate)
     }
 
     @Bean
     @ConditionalOnClass(name = ["javax.servlet.http.HttpServletResponse"])
     fun simpleRedisCacheFactoryWeb(): SimpleRedisCacheFactoryWeb {
         log.info("Creating SimpleRedisCacheFactoryWeb")
-        return SimpleRedisCacheFactoryWeb(corePoolSize, maxPoolSize, queueCapacity, redisTemplate, objectMapper)
+        return SimpleRedisCacheFactoryWeb(corePoolSize, maxPoolSize, queueCapacity, redisTemplate)
     }
 }

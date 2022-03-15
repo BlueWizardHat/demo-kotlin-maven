@@ -1,5 +1,7 @@
 package net.bluewizardhat.common.cache
 
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import mu.KotlinLogging
@@ -168,6 +170,7 @@ sealed class SimpleRedisCache(
     }
 
     companion object {
+        @JsonInclude(NON_NULL)
         data class CachedValue<T>(
             val expireAfter: Duration,
             val refreshAfter: Duration?,

@@ -1,5 +1,6 @@
 package net.bluewizardhat.demoapp.template.controller
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import mu.KotlinLogging
 import net.bluewizardhat.common.cache.SimpleRedisCacheFactoryWeb
 import net.bluewizardhat.common.cache.SimpleRedisCacheWeb.NoCacheDirectives.MaxAge0
@@ -40,10 +41,11 @@ import net.bluewizardhat.demoapp.template.database.entity.Account as AccountEnti
 @RequestMapping("/api/account")
 class AccountController(
     private val accountRepository: AccountRepository,
+    private val objectMapper: ObjectMapper,
     private val cacheFactory: SimpleRedisCacheFactoryWeb
 ) {
     private val log = KotlinLogging.logger {}
-    private val accountCache = cacheFactory.forPool("account")
+    private val accountCache = cacheFactory.forPool("account", objectMapper = objectMapper)
 
     @GetMapping(path = ["/"])
     fun findAllAccounts(

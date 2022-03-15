@@ -1,6 +1,10 @@
 package net.bluewizardhat.common.cache
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.fasterxml.jackson.module.paramnames.ParameterNamesModule
 import mu.KotlinLogging
 import org.slf4j.MDC
 import org.springframework.data.redis.core.StringRedisTemplate
@@ -16,6 +20,7 @@ sealed class SimpleRedisCacheFactory(
     private val log = KotlinLogging.logger {}
 
     private var defaultExecutor: ThreadPoolTaskExecutor? = null
+    private var defaultObjectMapper: ObjectMapper? = null
 
     /**
      * Creates a SimpleRedisCache for a pool. A pool is basically a prefix to group all keys in the cache on.
@@ -26,7 +31,27 @@ sealed class SimpleRedisCacheFactory(
      * context, etc. If the thread refreshing the cache need more than logging context or more advanced behaviour
      * you should supply your own Executor that can handle this.
      */
-    abstract fun forPool(pool: String, lockDuration: Duration = Duration.ofMinutes(5), executor: Executor = defaultExecutor()): SimpleRedisCache
+    abstract fun forPool(
+        pool: String,
+        lockDuration: Duration = Duration.ofMinutes(5),
+        objectMapper: ObjectMapper = defaultObjectMapper(),
+        executor: Executor = defaultExecutor()
+    ): SimpleRedisCache
+
+    @Synchronized
+    protected fun defaultObjectMapper(): ObjectMapper {
+        var objectMapper = defaultObjectMapper
+        if (objectMapper == null) {
+            objectMapper = ObjectMapper()
+                .registerModule(JavaTimeModule())
+                .registerModule(ParameterNamesModule())
+                .registerModule(KotlinModule.Builder().build())
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS) // ISO timestamps please
+            defaultObjectMapper = objectMapper
+            log.debug { "Initialized default ObjectMapper" }
+        }
+        return objectMapper!!
+    }
 
     @Synchronized
     protected fun defaultExecutor(): Executor {
@@ -74,9 +99,8 @@ class SimpleRedisCacheFactoryBasic(
     maxPoolSize: Int,
     queueCapacity: Int,
     private val redisTemplate: StringRedisTemplate,
-    private val objectMapper: ObjectMapper
 ) : SimpleRedisCacheFactory(corePoolSize, maxPoolSize, queueCapacity) {
-    override fun forPool(pool: String, lockDuration: Duration, executor: Executor): SimpleRedisCache =
+    override fun forPool(pool: String, lockDuration: Duration, objectMapper: ObjectMapper, executor: Executor): SimpleRedisCache =
         SimpleRedisCacheBasic(redisTemplate, objectMapper, pool, lockDuration, executor)
 }
 
@@ -85,7 +109,6 @@ class SimpleRedisCacheFactoryWeb(
     maxPoolSize: Int,
     queueCapacity: Int,
     private val redisTemplate: StringRedisTemplate,
-    private val objectMapper: ObjectMapper
 ) : SimpleRedisCacheFactory(corePoolSize, maxPoolSize, queueCapacity) {
     /**
      * Creates a SimpleRedisCacheWeb for a pool. A pool is basically a prefix to group all keys in the cache on.
@@ -96,6 +119,6 @@ class SimpleRedisCacheFactoryWeb(
      * context, etc. If the thread refreshing the cache need more than logging context or more advanced behaviour
      * you should supply your own Executor that can handle this.
      */
-    override fun forPool(pool: String, lockDuration: Duration, executor: Executor): SimpleRedisCacheWeb =
+    override fun forPool(pool: String, lockDuration: Duration, objectMapper: ObjectMapper, executor: Executor): SimpleRedisCacheWeb =
         SimpleRedisCacheWeb(redisTemplate, objectMapper, pool, lockDuration, executor)
 }
