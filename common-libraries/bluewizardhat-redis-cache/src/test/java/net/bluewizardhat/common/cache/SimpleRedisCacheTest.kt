@@ -19,6 +19,7 @@ import java.time.Duration
 import java.util.concurrent.Executor
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 internal class SimpleRedisCacheTest {
     private val valueOperations: ValueOperations<String, String> = mock()
@@ -45,26 +46,56 @@ internal class SimpleRedisCacheTest {
 
     @Test
     internal fun testNotCached() {
+        // Setup
         val captor = argumentCaptor<CachedValue<String>>()
+
+        // Execute
         val value: String = cache.cache(key = "testKey", expireAfter = Duration.ofMinutes(1), refreshAfter = Duration.ofSeconds(45)) {
             "cacheValue"
         }
+
+        // Verify
         verify(objectMapper).writeValueAsString(captor.capture())
         verify(valueOperations).set(eq("testPool:testKey"), eq("serializedValue"), any<Duration>())
         assertEquals("cacheValue", value)
-        captor.firstValue.let {
-            assertEquals("cacheValue", it.value)
-            assertEquals(Duration.ofMinutes(1), it.expireAfter)
-            assertEquals(Duration.ofSeconds(45), it.refreshAfter)
-            assertNotNull(it.cacheTime)
+        with(captor.firstValue) {
+            assertEquals("cacheValue", value)
+            assertEquals(Duration.ofMinutes(1), expireAfter)
+            assertEquals(Duration.ofSeconds(45), refreshAfter)
+            assertNotNull(cacheTime)
+        }
+    }
+
+    @Test
+    internal fun testNotCachedWithNull() {
+        // Setup
+        val captor = argumentCaptor<CachedValue<String>>()
+
+        // Execute
+        val value: String? = cache.cache(key = "testKey", expireAfter = Duration.ofMinutes(1)) {
+            null
+        }
+
+        // Verify
+        verify(objectMapper).writeValueAsString(captor.capture())
+        verify(valueOperations).set(eq("testPool:testKey"), eq("serializedValue"), any<Duration>())
+        assertNull(value)
+        with(captor.firstValue) {
+            assertNull(value)
+            assertEquals(Duration.ofMinutes(1), expireAfter)
+            assertNull(refreshAfter)
+            assertNotNull(cacheTime)
         }
     }
 
     @Test
     internal fun testDurationZero() {
+        // Execute
         val value: String = cache.cache(key = "testKey", expireAfter = Duration.ZERO) {
             "cacheValue"
         }
+
+        // Verify
         verify(objectMapper, never()).writeValueAsString(any())
         verify(valueOperations, never()).set(eq("testPool:testKey"), any(), any<Duration>())
         assertEquals("cacheValue", value)
