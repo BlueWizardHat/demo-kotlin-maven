@@ -53,7 +53,8 @@ sealed class SimpleRedisCache(
      * expireAfter and refreshAfter values.
      *
      * @param key cache key.
-     * @param expireAfter after how long the object should expire from the cache.
+     * @param expireAfter after how long the object should expire from the cache. If expireAfter is less than 1 second
+     * the value will not be cached.
      * @param refreshAfter after how long the object should be refreshed in the cache.
      * @param supplier is used to supply the value to return if not found in cache.
      */
@@ -167,9 +168,13 @@ sealed class SimpleRedisCache(
     }
 
     private fun <T> writeToCache(key: String, expireAfter: Duration, cachedValue: CachedValue<T>) {
-        doWithLock("$key.lock") {
-            log.debug { "Writing '$key' to cache, expires after $expireAfter" }
-            valueOperations.set(key, objectMapper.writeValueAsString(cachedValue), expireAfter)
+        if (expireAfter.seconds > 0) {
+            doWithLock("$key.lock") {
+                log.debug { "Writing '$key' to cache, expires after $expireAfter" }
+                valueOperations.set(key, objectMapper.writeValueAsString(cachedValue), expireAfter)
+            }
+        } else {
+            log.info { "Skip writing '$key' to cache as expireAfter is less than 1 second ($expireAfter)" }
         }
     }
 
@@ -184,7 +189,7 @@ sealed class SimpleRedisCache(
                 redisTemplate.unlink(lock)
             }
         } else {
-            log.debug { "Could not acquire lock '$lock', unable to update cache" }
+            log.warn { "Could not acquire lock '$lock', unable to update cache" }
         }
     }
 }

@@ -9,6 +9,7 @@ import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -57,6 +58,16 @@ internal class SimpleRedisCacheTest {
             assertEquals(Duration.ofSeconds(45), it.refreshAfter)
             assertNotNull(it.cacheTime)
         }
+    }
+
+    @Test
+    internal fun testDurationZero() {
+        val value: String = cache.cache(key = "testKey", expireAfter = Duration.ZERO) {
+            "cacheValue"
+        }
+        verify(objectMapper, never()).writeValueAsString(any())
+        verify(valueOperations, never()).set(eq("testPool:testKey"), any(), any<Duration>())
+        assertEquals("cacheValue", value)
     }
 
     @Test
