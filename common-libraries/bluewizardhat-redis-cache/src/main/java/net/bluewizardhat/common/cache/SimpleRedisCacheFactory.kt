@@ -6,20 +6,18 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule
 import mu.KotlinLogging
-import org.slf4j.MDC
-import org.springframework.data.redis.core.StringRedisTemplate
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import java.time.Duration
 import java.util.concurrent.Executor
+import java.util.function.Supplier
 
+/**
+ * Factory for SimpleRedisCache.
+ */
 sealed class SimpleRedisCacheFactory(
-    private val corePoolSize: Int,
-    private val maxPoolSize: Int,
-    private val queueCapacity: Int
+    private val defaultExecutor: Supplier<Executor>
 ) {
     private val log = KotlinLogging.logger {}
 
-    private var defaultExecutor: ThreadPoolTaskExecutor? = null
     private var defaultObjectMapper: ObjectMapper? = null
 
     /**
@@ -35,7 +33,7 @@ sealed class SimpleRedisCacheFactory(
         pool: String,
         lockDuration: Duration = Duration.ofMinutes(5),
         objectMapper: ObjectMapper = defaultObjectMapper(),
-        executor: Executor = defaultExecutor()
+        executor: Executor = defaultExecutor.get()
     ): SimpleRedisCache
 
     @Synchronized
@@ -52,64 +50,26 @@ sealed class SimpleRedisCacheFactory(
         }
         return objectMapper!!
     }
-
-    @Synchronized
-    protected fun defaultExecutor(): Executor {
-        var executor = defaultExecutor
-        if (executor == null) {
-            executor = ThreadPoolTaskExecutor()
-            executor.corePoolSize = corePoolSize
-            executor.maxPoolSize = maxPoolSize
-            executor.setQueueCapacity(queueCapacity)
-            executor.setTaskDecorator(this::wrapLoggingContext)
-            executor.afterPropertiesSet()
-            defaultExecutor = executor
-            log.debug { "Initialized default ThreadPoolTaskExecutor; corePoolSize=$corePoolSize, maxPoolSize=$maxPoolSize, queueCapacity=$queueCapacity" }
-        }
-        return executor
-    }
-
-    /**
-     * Wraps a Runnable so that the executing thread will retain the logging context of the
-     * originating thread.
-     */
-    private fun wrapLoggingContext(runnable: Runnable): Runnable {
-        val context: Map<String, String>? = MDC.getCopyOfContextMap()
-        return Runnable {
-            val original: Map<String, String>? = MDC.getCopyOfContextMap()
-            try {
-                overwriteLoggingContext(context)
-                runnable.run()
-            } finally {
-                overwriteLoggingContext(original)
-            }
-        }
-    }
-
-    private fun overwriteLoggingContext(context: Map<String, String>?) {
-        MDC.clear()
-        if (context != null) {
-            MDC.setContextMap(context)
-        }
-    }
 }
 
+/**
+ * Concrete implementation of SimpleRedisCacheFactory because sealed classes are abstract.
+ */
 class SimpleRedisCacheFactoryBasic(
-    corePoolSize: Int,
-    maxPoolSize: Int,
-    queueCapacity: Int,
-    private val redisTemplate: StringRedisTemplate,
-) : SimpleRedisCacheFactory(corePoolSize, maxPoolSize, queueCapacity) {
+    defaultExecutor: Supplier<Executor>,
+    private val redisAdapter: RedisAdapter,
+) : SimpleRedisCacheFactory(defaultExecutor) {
     override fun forPool(pool: String, lockDuration: Duration, objectMapper: ObjectMapper, executor: Executor): SimpleRedisCache =
-        SimpleRedisCacheBasic(redisTemplate, objectMapper, pool, lockDuration, executor)
+        SimpleRedisCacheBasic(redisAdapter, objectMapper, pool, lockDuration, executor)
 }
 
+/**
+ * Factory for SimpleRedisCacheWeb.
+ */
 class SimpleRedisCacheFactoryWeb(
-    corePoolSize: Int,
-    maxPoolSize: Int,
-    queueCapacity: Int,
-    private val redisTemplate: StringRedisTemplate,
-) : SimpleRedisCacheFactory(corePoolSize, maxPoolSize, queueCapacity) {
+    defaultExecutor: Supplier<Executor>,
+    private val redisAdapter: RedisAdapter,
+) : SimpleRedisCacheFactory(defaultExecutor) {
     /**
      * Creates a SimpleRedisCacheWeb for a pool. A pool is basically a prefix to group all keys in the cache on.
      * Optionally it is possible to supply an Executor that is used to refresh values in the background,
@@ -120,5 +80,5 @@ class SimpleRedisCacheFactoryWeb(
      * you should supply your own Executor that can handle this.
      */
     override fun forPool(pool: String, lockDuration: Duration, objectMapper: ObjectMapper, executor: Executor): SimpleRedisCacheWeb =
-        SimpleRedisCacheWeb(redisTemplate, objectMapper, pool, lockDuration, executor)
+        SimpleRedisCacheWeb(redisAdapter, objectMapper, pool, lockDuration, executor)
 }

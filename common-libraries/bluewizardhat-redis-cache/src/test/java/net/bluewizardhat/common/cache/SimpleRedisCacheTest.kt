@@ -13,8 +13,6 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import org.springframework.data.redis.core.StringRedisTemplate
-import org.springframework.data.redis.core.ValueOperations
 import java.time.Duration
 import java.util.concurrent.Executor
 import kotlin.test.assertEquals
@@ -22,11 +20,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 internal class SimpleRedisCacheTest {
-    private val valueOperations: ValueOperations<String, String> = mock()
-
-    private val redisTemplate: StringRedisTemplate = mock {
-        on { opsForValue() } doReturn valueOperations
-    }
+    private val redisAdapter: RedisAdapter = mock()
 
     private val objectMapper: ObjectMapper = mock {
         on { writeValueAsString(any()) } doReturn "serializedValue"
@@ -35,13 +29,13 @@ internal class SimpleRedisCacheTest {
         on { execute(any()) } doAnswer { (it.arguments[0] as Runnable).run() }
     }
 
-    private val cache: SimpleRedisCache = SimpleRedisCacheBasic(redisTemplate, objectMapper, "testPool", Duration.ofMinutes(5), executor)
-    private val webCache: SimpleRedisCacheWeb = SimpleRedisCacheWeb(redisTemplate, objectMapper, "testPool", Duration.ofMinutes(5), executor)
+    private val cache: SimpleRedisCache = SimpleRedisCacheBasic(redisAdapter, objectMapper, "testPool", Duration.ofMinutes(5), executor)
+    private val webCache: SimpleRedisCacheWeb = SimpleRedisCacheWeb(redisAdapter, objectMapper, "testPool", Duration.ofMinutes(5), executor)
 
     @BeforeEach
     internal fun before() {
-        reset(valueOperations)
-        whenever(valueOperations.setIfAbsent(any(), any(), any())).thenReturn(true)
+        reset(redisAdapter)
+        whenever(redisAdapter.setIfAbsent(any(), any(), any())).thenReturn(true)
     }
 
     @Test
@@ -56,7 +50,7 @@ internal class SimpleRedisCacheTest {
 
         // Verify
         verify(objectMapper).writeValueAsString(captor.capture())
-        verify(valueOperations).set(eq("testPool:testKey"), eq("serializedValue"), any<Duration>())
+        verify(redisAdapter).set(eq("testPool:testKey"), eq("serializedValue"), any<Duration>())
         assertEquals("cacheValue", value)
         with(captor.firstValue) {
             assertEquals("cacheValue", value)
@@ -78,7 +72,7 @@ internal class SimpleRedisCacheTest {
 
         // Verify
         verify(objectMapper).writeValueAsString(captor.capture())
-        verify(valueOperations).set(eq("testPool:testKey"), eq("serializedValue"), any<Duration>())
+        verify(redisAdapter).set(eq("testPool:testKey"), eq("serializedValue"), any<Duration>())
         assertNull(value)
         with(captor.firstValue) {
             assertNull(value)
@@ -97,7 +91,7 @@ internal class SimpleRedisCacheTest {
 
         // Verify
         verify(objectMapper, never()).writeValueAsString(any())
-        verify(valueOperations, never()).set(eq("testPool:testKey"), any(), any<Duration>())
+        verify(redisAdapter, never()).set(any(), any(), any<Duration>())
         assertEquals("cacheValue", value)
     }
 

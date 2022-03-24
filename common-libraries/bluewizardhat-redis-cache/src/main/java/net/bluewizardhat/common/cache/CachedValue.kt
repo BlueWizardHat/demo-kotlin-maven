@@ -2,6 +2,7 @@ package net.bluewizardhat.common.cache
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
+import com.fasterxml.jackson.annotation.JsonProperty
 import java.time.Duration
 import java.time.OffsetDateTime
 
@@ -10,10 +11,10 @@ import java.time.OffsetDateTime
  */
 @JsonInclude(NON_NULL)
 data class CachedValue<T>(
-    val expireAfter: Duration,
-    val refreshAfter: Duration?,
-    val value: T,
-    val cacheTime: OffsetDateTime = OffsetDateTime.now()
+    @JsonProperty val expireAfter: Duration,
+    @JsonProperty val refreshAfter: Duration?,
+    @JsonProperty val value: T,
+    @JsonProperty val cacheTime: OffsetDateTime = OffsetDateTime.now()
 ) {
     constructor(valueToCache: ValueToCache<T>) : this(valueToCache.expireAfter, valueToCache.refreshAfter, valueToCache.value)
 }
