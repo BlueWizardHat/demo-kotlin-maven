@@ -123,7 +123,7 @@ sealed class SimpleRedisCache(
 
     private fun <T> readFromCache(key: String, refreshAfter: Duration?, supplier: Supplier<ValueToCache<T>>, typeRef: TypeReference<CachedValue<T>>): CachedValue<T>? {
         try {
-            val serialized = redisAdapter.get(key)
+            val serialized: String? = redisAdapter.get(key)
             if (serialized != null) {
                 log.debug { "(Hit) Read '$key' from cache" }
                 val cachedValue = objectMapper.readValue(serialized, typeRef)
