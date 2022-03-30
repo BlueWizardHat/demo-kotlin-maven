@@ -122,21 +122,17 @@ sealed class SimpleRedisCache(
     }
 
     private fun <T> readFromCache(key: String, refreshAfter: Duration?, supplier: Supplier<ValueToCache<T>>, typeRef: TypeReference<CachedValue<T>>): CachedValue<T>? {
-        try {
-            val serialized: String? = redisAdapter.get(key)
-            if (serialized != null) {
-                log.debug { "(Hit) Read '$key' from cache" }
-                val cachedValue = objectMapper.readValue(serialized, typeRef)
-                val refreshAfterActual = refreshAfter ?: cachedValue.refreshAfter
-                if (refreshAfterActual != null && OffsetDateTime.now().isAfter(cachedValue.cacheTime.plus(refreshAfterActual))) {
-                    queueUpdate(key, refreshAfterActual, supplier, typeRef)
-                }
-                return cachedValue
+        val serialized: String? = redisAdapter.get(key)
+        if (serialized != null) {
+            log.debug { "(Hit) Read '$key' from cache" }
+            val cachedValue = objectMapper.readValue(serialized, typeRef)
+            val refreshAfterActual = refreshAfter ?: cachedValue.refreshAfter
+            if (refreshAfterActual != null && OffsetDateTime.now().isAfter(cachedValue.cacheTime.plus(refreshAfterActual))) {
+                queueUpdate(key, refreshAfterActual, supplier, typeRef)
             }
-            log.debug { "(Miss) Key '$key' not found in cache" }
-        } catch (e: Exception) {
-            log.error(e) { "Error while reading '$key' from cache: ${e.message}" }
+            return cachedValue
         }
+        log.debug { "(Miss) Key '$key' not found in cache" }
         return null
     }
 
@@ -159,7 +155,11 @@ sealed class SimpleRedisCache(
 
     private fun <T> writeToCacheBg(key: String, value: CachedValue<T>): CachedValue<T> {
         executor.execute {
-            writeToCache(key, value.expireAfter, value)
+            try {
+                writeToCache(key, value.expireAfter, value)
+            } catch (e: Throwable) {
+                log.error(e) { "Error while updating cache for '$key': ${e.message}" }
+            }
         }
         return value
     }
