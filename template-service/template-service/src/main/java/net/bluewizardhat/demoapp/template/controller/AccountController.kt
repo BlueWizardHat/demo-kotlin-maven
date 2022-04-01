@@ -3,6 +3,7 @@ package net.bluewizardhat.demoapp.template.controller
 import com.fasterxml.jackson.databind.ObjectMapper
 import mu.KotlinLogging
 import net.bluewizardhat.common.cache.SimpleRedisCacheFactoryWeb
+import net.bluewizardhat.common.cache.SimpleRedisCacheWeb.CacheDirectives.MaxAgeExpireAfter
 import net.bluewizardhat.common.cache.SimpleRedisCacheWeb.NoCacheDirectives.MaxAge0
 import net.bluewizardhat.common.cache.SimpleRedisCacheWeb.NoCacheDirectives.MustRevalidate
 import net.bluewizardhat.common.cache.SimpleRedisCacheWeb.NoCacheDirectives.NoCache
@@ -48,7 +49,7 @@ class AccountController(
     private val accountCache = cacheFactory.forPool("account", objectMapper = objectMapper)
 
     @GetMapping(path = ["/"])
-    fun findAllAccounts(
+    fun findAccounts(
         @RequestParam(required = false, defaultValue = "0") @Min(0) page: Int,
         @RequestParam(required = false, defaultValue = "10") @Min(5) @Max(100) pageSize: Int,
         response: HttpServletResponse
@@ -60,7 +61,7 @@ class AccountController(
     @GetMapping(path = ["/{id}"])
     fun getAccountById(@PathVariable("id") id: UUID, response: HttpServletResponse): Account {
         return accountCache
-            .cacheControl(response, NoCache, NoStore, MaxAge0, MustRevalidate)
+            .cacheControl(response, MaxAgeExpireAfter)
             .cache(key = id.toString(), expireAfter = Duration.ofHours(1), refreshAfter = Duration.ofMinutes(45)) {
                 log.debug { "Fetching account '$id' from database" }
                 accountRepository

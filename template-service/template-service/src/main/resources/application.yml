@@ -11,6 +11,10 @@ spring:
     hibernate.ddl-auto: validate
 
   cache.type: redis
+  data:
+    redis:
+      repositories:
+        enabled: false
 
 management:
   endpoints:

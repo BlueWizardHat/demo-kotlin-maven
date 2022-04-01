@@ -11,9 +11,9 @@ import org.springframework.context.annotation.Configuration
 class LoggingAspectAutoConfiguration {
     @Bean
     @ConditionalOnClass(name = ["org.springframework.web.context.request.async.DeferredResult"])
-    fun loadDeferredResultResultHandler(aspect: LoggingAspect): DeferredResultResultHandler {
+    fun loadDeferredResultResultHandler(aspect: LoggingAspect): DeferredResultResultHandler? {
         val resultHandler = DeferredResultResultHandler()
         aspect.registerResultHandler(resultHandler)
-        return resultHandler
+        return null // Hacky
     }
 }
