@@ -36,6 +36,14 @@
 			<groupId>net.bluewizardhat.common</groupId>
 			<artifactId>bluewizardhat-logging-aspect</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>net.bluewizardhat.common</groupId>
+			<artifactId>bluewizardhat-error-details</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.bluewizardhat.common</groupId>
+			<artifactId>bluewizardhat-exception-handlers</artifactId>
+		</dependency>
 
 		<!--
 		<dependency>

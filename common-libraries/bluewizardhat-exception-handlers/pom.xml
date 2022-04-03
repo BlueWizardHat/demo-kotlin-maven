@@ -17,6 +17,14 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>net.bluewizardhat.common</groupId>
 			<artifactId>bluewizardhat-error-details</artifactId>
 		</dependency>

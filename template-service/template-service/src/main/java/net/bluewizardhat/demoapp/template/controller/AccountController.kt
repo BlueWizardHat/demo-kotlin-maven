@@ -10,13 +10,9 @@ import net.bluewizardhat.common.cache.SimpleRedisCacheWeb.NoCacheDirectives.NoCa
 import net.bluewizardhat.common.cache.SimpleRedisCacheWeb.NoCacheDirectives.NoStore
 import net.bluewizardhat.demoapp.template.api.Account
 import net.bluewizardhat.demoapp.template.api.AccountRequest
-import net.bluewizardhat.demoapp.template.database.repository.AccountRepository
-import net.bluewizardhat.demoapp.template.mapping.AccountMapper.toApi
-import net.bluewizardhat.demoapp.template.mapping.AccountMapper.toApis
-import net.bluewizardhat.demoapp.template.mapping.AccountMapper.toEntity
+import net.bluewizardhat.demoapp.template.service.AccountService
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpStatus
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
@@ -35,13 +31,12 @@ import javax.transaction.Transactional
 import javax.validation.Valid
 import javax.validation.constraints.Max
 import javax.validation.constraints.Min
-import net.bluewizardhat.demoapp.template.database.entity.Account as AccountEntity
 
 @Validated
 @RestController
 @RequestMapping("/api/account")
 class AccountController(
-    private val accountRepository: AccountRepository,
+    private val accountService: AccountService,
     private val objectMapper: ObjectMapper,
     private val cacheFactory: SimpleRedisCacheFactoryWeb
 ) {
@@ -55,7 +50,7 @@ class AccountController(
         response: HttpServletResponse
     ): Page<Account> {
         accountCache.cacheControl(response, NoCache, NoStore, MaxAge0, MustRevalidate)
-        return accountRepository.findAll(PageRequest.of(page, pageSize, AccountEntity.defaultSort)).toApis()
+        return accountService.findAccounts(page, pageSize)
     }
 
     @GetMapping(path = ["/{id}"])
@@ -63,25 +58,21 @@ class AccountController(
         return accountCache
             .cacheControl(response, MaxAgeExpireAfter)
             .cache(key = id.toString(), expireAfter = Duration.ofHours(1), refreshAfter = Duration.ofMinutes(45)) {
-                log.debug { "Fetching account '$id' from database" }
-                accountRepository
-                    .findById(id)
-                    .map { it.toApi() }
-                    .orElseThrow { IllegalArgumentException("Account with id '$id' not found") }
+                accountService.getAccountById(id)
             }
     }
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(path = ["/"])
     fun saveNewAccount(@Valid @RequestBody request: AccountRequest): Account {
-        return accountRepository.save(request.toEntity()).toApi()
+        return accountService.saveNewAccount(request)
     }
 
     @Transactional
     @PatchMapping(path = ["/{id}"])
     fun updateExistingAccount(@PathVariable("id") id: UUID, @Valid @RequestBody request: AccountRequest): Int {
         accountCache.invalidate(id.toString())
-        return accountRepository.updateAccount(id, request.name!!)
+        return accountService.updateExistingAccount(id, request)
     }
 
     @Profile("local")
