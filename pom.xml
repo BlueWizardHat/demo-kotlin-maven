@@ -27,7 +27,7 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<targetJdk>17</targetJdk>
 		<java.version>17</java.version>
-		<kotlin.version>1.6.10</kotlin.version>
+		<kotlin.version>1.6.20</kotlin.version>
 		<junit.version>5.8.2</junit.version>
 		<kotlin-logging.version>2.1.21</kotlin-logging.version>
 		<mockito-kotlin.version>4.0.0</mockito-kotlin.version>
