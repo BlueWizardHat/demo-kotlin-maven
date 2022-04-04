@@ -163,6 +163,21 @@ function maven_build() {
 		fi
 }
 
+function build_integration_tests() {
+	services=$(get_services)
+
+	serviceDirs=""
+	for service in $integrationTestsJars; do
+		s=(${service//=/ })
+		name="${s[0]}"
+		if [[ "$services" =~ $name ]]; then
+			jar="${s[1]}"
+			serviceDirs="$serviceDirs,${jar%/target/*}"
+		fi
+	done
+	maven_build clean install -pl ${serviceDirs#,} -am
+}
+
 function integration_tests() {
 	services=$(get_services)
 
@@ -260,6 +275,12 @@ while [[ $# -gt 0 ]]; do
 			echo -e "\n\e[1;33m* Stopping and removing containers\e[0m\n"
 			docker-compose -f $composeFile kill && docker-compose -f $composeFile down
 		;;
+		bitests)
+			echo -e "\n\e[1;33m* Building and running integration tests: $(get_services)\e[0m\n"
+			build_integration_tests
+			echo
+			integration_tests
+		;;
 		itests)
 			echo -e "\n\e[1;33m* Running integration tests: $(get_services)\e[0m\n"
 			integration_tests
@@ -273,8 +294,10 @@ while [[ $# -gt 0 ]]; do
 			docker exec -it demoapp-postgresql-server psql -h localhost -U "$db" "$db"
 		;;
 		*)
-			echo "Unknown arguments: $*"
+			echo "Unknown arguments: $option"
 			echo "Usage: $0 build|start|logs|pause|stop|refresh"
+			echo
+			echo "See README.md for full documentation"
 			exit 1
 		;;
 	esac

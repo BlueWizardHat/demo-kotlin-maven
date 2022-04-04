@@ -4,9 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import feign.Client
 import feign.Feign
 import feign.Headers
+import feign.Param
 import feign.Request
 import feign.RequestLine
 import feign.Retryer
+import feign.jackson.JacksonDecoder
 import feign.jackson.JacksonEncoder
 import mu.KotlinLogging
 import net.bluewizardhat.common.logging.aspect.LogInvocation
@@ -31,26 +33,26 @@ class AccountFeignClient(
     client: Client
 ) : AccountOperations {
     companion object {
-        const val urlPrefix = "/api//account"
+        const val urlPrefix = "/api/account"
         const val connectTimeoutSeconds: Long = 10
         const val readTimeoutSeconds: Long = 60
 
         interface AccountServiceFeignApi : AccountOperations {
-            @RequestLine("GET $urlPrefix/")
+            @RequestLine("GET $urlPrefix/?page={page}&pageSize={pageSize}")
             @Headers("Content-Type: application/json")
-            override fun findAccounts(page: Int, pageSize: Int): Page<Account>
+            override fun findAccounts(@Param("page") page: Int, @Param("pageSize") pageSize: Int): Page<Account>
 
             @RequestLine("GET $urlPrefix/{id}")
             @Headers("Content-Type: application/json")
-            override fun getAccountById(id: UUID): Account
+            override fun getAccountById(@Param("id") id: UUID): Account
 
-            @RequestLine("GET $urlPrefix/")
+            @RequestLine("POST $urlPrefix/")
             @Headers("Content-Type: application/json")
             override fun saveNewAccount(request: AccountRequest): Account
 
             @RequestLine("PATCH $urlPrefix/{id}")
             @Headers("Content-Type: application/json")
-            override fun updateExistingAccount(id: UUID, request: AccountRequest): Int
+            override fun updateExistingAccount(@Param("id") id: UUID, request: AccountRequest): Int
         }
     }
 
@@ -59,8 +61,9 @@ class AccountFeignClient(
     private val feignClient: AccountServiceFeignApi = Feign.builder()
         .client(client)
         .encoder(JacksonEncoder(objectMapper))
+        .decoder(JacksonDecoder(objectMapper))
         .retryer(Retryer.NEVER_RETRY)
-        .options(Request.Options(connectTimeoutSeconds, TimeUnit.SECONDS, readTimeoutSeconds, TimeUnit.SECONDS, true))
+        .options(Request.Options(connectTimeoutSeconds, TimeUnit.SECONDS, readTimeoutSeconds, TimeUnit.SECONDS, false))
         .target(AccountServiceFeignApi::class.java, endpoint)
 
     init {

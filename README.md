@@ -50,6 +50,7 @@ Commands:
 * pause - stops all containers but does not remove them, they can later be restarted again
 * stop or down - stops and removes all containers
 * itests - run integration tests against running containers
+* bitests - builds integration tests and then run them against running containers
 * dbconnect - drops you into a psql command line of the selected database
 
 Options:

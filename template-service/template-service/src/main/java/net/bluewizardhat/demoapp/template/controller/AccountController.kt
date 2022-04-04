@@ -37,8 +37,8 @@ import javax.validation.constraints.Min
 @RequestMapping("/api/account")
 class AccountController(
     private val accountService: AccountService,
-    private val objectMapper: ObjectMapper,
-    private val cacheFactory: SimpleRedisCacheFactoryWeb
+    objectMapper: ObjectMapper,
+    cacheFactory: SimpleRedisCacheFactoryWeb
 ) {
     private val log = KotlinLogging.logger {}
     private val accountCache = cacheFactory.forPool("account", objectMapper = objectMapper)
@@ -55,10 +55,12 @@ class AccountController(
 
     @GetMapping(path = ["/{id}"])
     fun getAccountById(@PathVariable("id") id: UUID, response: HttpServletResponse): Account {
+        // It is obviously overkill to cache single entities from the database like I am doing here,
+        // but it provides an example of how the redis cache can be used.
         return accountCache
             .cacheControl(response, MaxAgeExpireAfter)
             .cache(key = id.toString(), expireAfter = Duration.ofHours(1), refreshAfter = Duration.ofMinutes(45)) {
-                accountService.getAccountById(id)
+                accountService.getAccountById(id) // pretend this is an expensive operation
             }
     }
 
