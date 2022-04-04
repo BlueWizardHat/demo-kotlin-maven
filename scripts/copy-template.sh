@@ -105,27 +105,36 @@ done
 # Rename packages
 $scriptDir/rename-packages.sh "$TEMPLATE_PACKAGE" "$NEW_PACKAGE"
 
+# Renaming files with 'TemplateService' in their name.
+prettyName="${PRETTY_SERVICE/-/}"
+echo
+echo "Rename in '$NEW_SERVICE' files with 'TemplateService' in their name:"
+files=$(find . -name target -prune -o -type f -name "*TemplateService*" | grep -v -e "/target$")
+for file in $files; do
+	newName="${file/TemplateService/$prettyName}"
+	echo "  * $file -> $newName"
+	mv "$file" "$newName"
+done
+
 echo
 echo "Replace in '$NEW_SERVICE' files:"
 echo "  'template-service' -> '$NEW_SERVICE'"
 echo "  'Template-Service' -> '$PRETTY_SERVICE'"
+echo "  'TemplateService'  -> '$prettyName'"
 echo
-files=$(find . -name target -prune -o -type f \( -regex ".*\.kts?" -o -name "*.java" -o -regex ".*\.ya?ml" -o -name "*.xml" -o -name "*.properties" -o -name "*.md" -o -name "Dockerfile*" -o -name "localdev.config" \) | grep -v -e "/target$")
+files=$(find . -name target -prune -o -type f \( -regex ".*\.kts?" -o -name "*.java" -o -regex ".*\.ya?ml" -o -name "*.xml" -o -name "*.properties" -o -name "*.md" -o -name "Dockerfile*" -o -name "localdev.config" -o -name "spring.factories" \) | grep -v -e "/target$")
 for file in $files; do
 	if [ -f "$file" ]; then
 		echo "  * Processing file $file"
-		sed -i "s|template-service|$NEW_SERVICE|g;s|Template-Service|$PRETTY_SERVICE|g" "$file"
+		sed -i "s|template-service|$NEW_SERVICE|g;s|Template-Service|$PRETTY_SERVICE|g;s|TemplateService|$prettyName|g" "$file"
 	fi
 done
-
-# Renaming files with 'template-service' in their name.
 echo
-echo "Rename in '$NEW_SERVICE' files with 'template-service' in their name:"
-files=$(find . -name target -prune -o -type f -name "*template-service*" | grep -v -e "/target$")
+echo "  'template' -> '${NEW_SERVICE%-service}'"
+files=$(find localdev-config -type f)
 for file in $files; do
-	newName="${file/template-service/$NEW_SERVICE}"
-	echo "  * $file -> $newName"
-	mv "$file" "$newName"
+       echo "  * Processing file $file"
+       sed -i "s|template|${NEW_SERVICE%-service}|g" "$file"
 done
 
 

@@ -87,7 +87,7 @@ echo "Replace in files:"
 echo "  '$ORIG_PACKAGE' -> '$NEW_PACKAGE'"
 echo "  '$ORIG_DIR' -> '$NEW_DIR'"
 echo
-files=$(find . -name target -prune -o -type f \( -regex ".*\.kts?" -o -name "*.java" -o -regex ".*\.ya?ml" -o -name "*.xml" -o -name "*.properties" \) | grep -v -e "/target$")
+files=$(find . -name target -prune -o -type f \( -regex ".*\.kts?" -o -name "*.java" -o -regex ".*\.ya?ml" -o -name "*.xml" -o -name "*.properties" -o -name "spring.factories" \) | grep -v -e "/target$")
 for file in $files; do
 	if [ -f "$file" ]; then
 		echo "  * Processing file $file"
