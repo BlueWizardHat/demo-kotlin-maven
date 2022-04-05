@@ -10,9 +10,9 @@ import net.bluewizardhat.common.cache.SimpleRedisCacheWeb.NoCacheDirectives.NoCa
 import net.bluewizardhat.common.cache.SimpleRedisCacheWeb.NoCacheDirectives.NoStore
 import net.bluewizardhat.demoapp.template.api.Account
 import net.bluewizardhat.demoapp.template.api.AccountRequest
+import net.bluewizardhat.demoapp.template.api.Page
 import net.bluewizardhat.demoapp.template.service.AccountService
 import org.springframework.context.annotation.Profile
-import org.springframework.data.domain.Page
 import org.springframework.http.HttpStatus
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping

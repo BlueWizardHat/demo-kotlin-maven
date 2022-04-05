@@ -15,8 +15,8 @@ import net.bluewizardhat.common.logging.aspect.LogInvocation
 import net.bluewizardhat.demoapp.template.api.Account
 import net.bluewizardhat.demoapp.template.api.AccountOperations
 import net.bluewizardhat.demoapp.template.api.AccountRequest
+import net.bluewizardhat.demoapp.template.api.Page
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.data.domain.Page
 import org.springframework.stereotype.Component
 import java.util.UUID
 import java.util.concurrent.TimeUnit

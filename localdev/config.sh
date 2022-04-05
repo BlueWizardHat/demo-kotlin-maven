@@ -2,4 +2,4 @@
 aliases="template=template-service"
 runnableJars="template-service=template-service/template-service/target/template-service.jar"
 integrationTestsJars="template-service=template-service/template-service-integration-tests/target/template-service-integration-tests-*-jar-with-dependencies.jar"
-ports="template-service=http/8080,debug/4000"
+ports="template-service=http/8081,debug/4001"

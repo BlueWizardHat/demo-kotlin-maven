@@ -2,8 +2,6 @@ package net.bluewizardhat.demoapp.template.mapping
 
 import net.bluewizardhat.demoapp.template.api.Account
 import net.bluewizardhat.demoapp.template.api.AccountRequest
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageImpl
 import java.time.OffsetDateTime
 import net.bluewizardhat.demoapp.template.database.entity.Account as AccountEntity
 
@@ -17,17 +15,13 @@ object AccountMapper {
         )
     }
 
-    fun AccountEntity.toApi(): Account =
+    fun dbToApi(entity: AccountEntity): Account =
         Account(
-            id = id ?: throw IllegalArgumentException("id is not supposed to be null"),
-            name = name,
-            created = created,
-            updated = updated
+            id = entity.id ?: throw IllegalArgumentException("id is not supposed to be null"),
+            name = entity.name,
+            created = entity.created,
+            updated = entity.updated
         )
 
-    fun Page<AccountEntity>.toApis(): Page<Account> =
-        PageImpl(this.content.toApis(), this.pageable, this.totalElements)
-
-    fun Iterable<AccountEntity>.toApis(): List<Account> =
-        this.map { it.toApi() }
+    fun AccountEntity.toApi(): Account = dbToApi(this)
 }

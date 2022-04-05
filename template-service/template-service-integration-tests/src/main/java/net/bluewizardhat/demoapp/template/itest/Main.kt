@@ -10,22 +10,11 @@ import org.junit.platform.launcher.listeners.discovery.LauncherDiscoveryListener
 import java.io.PrintWriter
 import kotlin.system.exitProcess
 
-/**
- * Takes one argument - the baseUrl to run tests against.
- */
 class Main {
     companion object {
-        lateinit var baseUrl: String
-
         @JvmStatic
         fun main(args: Array<String>) {
-
-            if (args.size != 1) {
-                println("No target")
-                exitProcess(1)
-            }
-            baseUrl = args[0]
-            println("Running Tests for Template-Service - $baseUrl")
+            println("\nRunning Tests for Template-Service - ${IntegrationTestsProperties.endpoint}")
 
             val summary = Main().runTests()
             if (summary.testsFailedCount > 0) {

@@ -1,6 +1,5 @@
 package net.bluewizardhat.demoapp.template.api
 
-import org.springframework.data.domain.Page
 import java.util.UUID
 import javax.validation.Valid
 import javax.validation.constraints.Max
