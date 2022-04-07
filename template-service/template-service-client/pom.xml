@@ -17,6 +17,14 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>net.bluewizardhat.demoapp.template</groupId>
+			<artifactId>template-service-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.bluewizardhat.common</groupId>
+			<artifactId>bluewizardhat-logging-aspect-annotations</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context</artifactId>
 		</dependency>
@@ -33,12 +41,13 @@
 			<artifactId>feign-slf4j</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>net.bluewizardhat.demoapp.template</groupId>
-			<artifactId>template-service-api</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-autoconfigure</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>net.bluewizardhat.common</groupId>
-			<artifactId>bluewizardhat-logging-aspect</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-configuration-processor</artifactId>
+			<optional>true</optional>
 		</dependency>
 	</dependencies>
 

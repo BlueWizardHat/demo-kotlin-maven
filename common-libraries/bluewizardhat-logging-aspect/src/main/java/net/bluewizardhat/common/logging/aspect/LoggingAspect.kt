@@ -1,6 +1,9 @@
 package net.bluewizardhat.common.logging.aspect
 
+import net.bluewizardhat.common.logging.aspect.annotations.LogInvocation
+import net.bluewizardhat.common.logging.aspect.annotations.Sensitive
 import net.bluewizardhat.common.logging.aspect.resulthandling.DefaultResultHandler
+import net.bluewizardhat.common.logging.aspect.resulthandling.DeferredResultResultHandler
 import net.bluewizardhat.common.logging.aspect.resulthandling.FutureResultHandler
 import net.bluewizardhat.common.logging.aspect.resulthandling.ListenableFutureResultHandler
 import net.bluewizardhat.common.logging.aspect.resulthandling.ResultHandler
@@ -27,16 +30,17 @@ class LoggingAspect {
         LinkedList<ResultHandler>().apply {
             add(ListenableFutureResultHandler())
             add(FutureResultHandler())
+            add(DeferredResultResultHandler())
         }
     private val defaultResultHandler: DefaultResultHandler = DefaultResultHandler()
 
     @Pointcut("execution(public * (@org.springframework.web.bind.annotation.RestController *).*(..))")
     fun methodOfRestController() {}
 
-    @Pointcut("execution(public * (@net.bluewizardhat.common.logging.aspect.LogInvocation *).*(..))")
+    @Pointcut("execution(public * (@net.bluewizardhat.common.logging.aspect.annotations.LogInvocation *).*(..))")
     fun methodOfAnnotatedClass() {}
 
-    @Pointcut("execution(@net.bluewizardhat.common.logging.aspect.LogInvocation * *.*(..))")
+    @Pointcut("execution(@net.bluewizardhat.common.logging.aspect.annotations.LogInvocation * *.*(..))")
     fun annotatedMethod() {}
 
     fun registerResultHandler(resultHandler: ResultHandler) = resultHandlers.addFirst(resultHandler)

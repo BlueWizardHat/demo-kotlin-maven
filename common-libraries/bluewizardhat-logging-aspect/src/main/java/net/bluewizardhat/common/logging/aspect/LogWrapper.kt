@@ -1,10 +1,11 @@
 package net.bluewizardhat.common.logging.aspect
 
-import net.bluewizardhat.common.logging.aspect.LogInvocation.ExceptionLogLevel.ERROR
-import net.bluewizardhat.common.logging.aspect.LogInvocation.ExceptionLogLevel.WARN
-import net.bluewizardhat.common.logging.aspect.LogInvocation.LogLevel.DEBUG
-import net.bluewizardhat.common.logging.aspect.LogInvocation.LogLevel.INFO
-import net.bluewizardhat.common.logging.aspect.LogInvocation.LogLevel.TRACE
+import net.bluewizardhat.common.logging.aspect.annotations.LogInvocation
+import net.bluewizardhat.common.logging.aspect.annotations.LogInvocation.ExceptionLogLevel.ERROR
+import net.bluewizardhat.common.logging.aspect.annotations.LogInvocation.ExceptionLogLevel.WARN
+import net.bluewizardhat.common.logging.aspect.annotations.LogInvocation.LogLevel.DEBUG
+import net.bluewizardhat.common.logging.aspect.annotations.LogInvocation.LogLevel.INFO
+import net.bluewizardhat.common.logging.aspect.annotations.LogInvocation.LogLevel.TRACE
 import org.slf4j.Logger
 import java.util.function.Supplier
 

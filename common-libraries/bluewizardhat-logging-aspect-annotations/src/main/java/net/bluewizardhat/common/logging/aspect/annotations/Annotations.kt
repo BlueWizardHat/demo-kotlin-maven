@@ -1,4 +1,4 @@
-package net.bluewizardhat.common.logging.aspect
+package net.bluewizardhat.common.logging.aspect.annotations
 
 /**
  * Indicates that a parameter is sensitive and therefore it's value should not be logged.

@@ -11,7 +11,7 @@ import feign.Retryer
 import feign.jackson.JacksonDecoder
 import feign.jackson.JacksonEncoder
 import mu.KotlinLogging
-import net.bluewizardhat.common.logging.aspect.LogInvocation
+import net.bluewizardhat.common.logging.aspect.annotations.LogInvocation
 import net.bluewizardhat.demoapp.template.api.Account
 import net.bluewizardhat.demoapp.template.api.AccountOperations
 import net.bluewizardhat.demoapp.template.api.AccountRequest
