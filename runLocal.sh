@@ -161,11 +161,11 @@ function print_ports() {
 }
 
 function maven_build() {
-		echo -e "\e[0;34mmvn $@\e[0m\n"
-		mvn --color=always $@ | grep --color=never -E 'Building.*\[|SUCCESS|FAIL|ERROR|-<|\] Test|Result|Total'
+		echo -e "\e[0;34mmvn -B -P $profiles $@\e[0m\n"
+		mvn --color=always -B -P "$profiles" $@ | grep --color=never -E 'Building.*\[|SUCCESS|FAIL|ERROR|-<|\] Test|Result|Total'
 		exit_code=${PIPESTATUS[0]}
 		if [ $exit_code != 0 ]; then
-			echo -e "\n\e[1;31mRun 'mvn $@' manually to see detailed errors\e[0m\n"
+			echo -e "\n\e[1;31mRun 'mvn -B -P "$profiles" $@' manually to see detailed errors\e[0m\n"
 			exit $exit_code
 		fi
 }
@@ -182,7 +182,7 @@ function build_integration_tests() {
 			serviceDirs="$serviceDirs,${jar%/target/*}"
 		fi
 	done
-	maven_build -P "$profiles" clean install -pl ${serviceDirs#,} -am
+	maven_build clean install -pl ${serviceDirs#,} -am
 }
 
 function integration_tests() {
@@ -238,11 +238,11 @@ while [[ $# -gt 0 ]]; do
 		;;
 		build)
 			echo -e "\n\e[1;33m* Building with maven:\e[0m \e[32m$projectDir\e[0m\n"
-			maven_build -P "$profiles" clean install $(get_service_build_params)
+			maven_build clean install $(get_service_build_params)
 		;;
 		qbuild)
 			echo -e "\n\e[1;33m* Building with maven:\e[0m \e[32m$projectDir\e[0m\n"
-			maven_build -P "$profiles" install $(get_service_build_params) -DskipTests
+			maven_build install $(get_service_build_params) -DskipTests
 		;;
 		start|up|run)
 			copy_jars
