@@ -6,13 +6,16 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule
 import feign.okhttp.OkHttpClient
+import net.bluewizardhat.demoapp.template.api.Account
 import net.bluewizardhat.demoapp.template.api.AccountOperations
 import net.bluewizardhat.demoapp.template.api.AccountRequest
+import net.bluewizardhat.demoapp.template.api.Page
 import net.bluewizardhat.demoapp.template.client.AccountFeignClient
 import net.bluewizardhat.demoapp.template.itest.IntegrationTestsProperties
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class AccountIntegrationTest {
     private val accountClient: AccountOperations by lazy { createAccountClient() }
@@ -40,7 +43,8 @@ class AccountIntegrationTest {
         assertEquals(savedAccount.id, retrievedAccount.id)
         assertEquals(savedAccount.name, retrievedAccount.name)
 
-        accountClient.findAccounts(0, 100)
+        val page: Page<Account> = accountClient.findAccounts(0, 100)
+        assertTrue(page.content.contains(retrievedAccount))
     }
 
     private fun createAccountClient(): AccountOperations {
