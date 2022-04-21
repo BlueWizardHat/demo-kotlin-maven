@@ -1,10 +1,11 @@
 package net.bluewizardhat.common.logging.aspect
 
-import net.bluewizardhat.common.logging.aspect.annotations.LogInvocation
+import net.bluewizardhat.common.logging.aspect.annotations.HideValue
+import net.bluewizardhat.common.logging.aspect.annotations.LogCall
 import net.bluewizardhat.common.logging.aspect.annotations.Sensitive
+import net.bluewizardhat.common.logging.aspect.resulthandling.AsyncResultHandler
 import net.bluewizardhat.common.logging.aspect.resulthandling.DefaultResultHandler
 import net.bluewizardhat.common.logging.aspect.resulthandling.DeferredResultResultHandler
-import net.bluewizardhat.common.logging.aspect.resulthandling.FutureResultHandler
 import net.bluewizardhat.common.logging.aspect.resulthandling.ListenableFutureResultHandler
 import net.bluewizardhat.common.logging.aspect.resulthandling.ResultHandler
 import org.aspectj.lang.ProceedingJoinPoint
@@ -22,25 +23,25 @@ import java.util.LinkedList
 @Component
 class LoggingAspect {
     companion object {
-        @LogInvocation
+        @LogCall
         class LogInvocationDefaults
     }
 
     private val resultHandlers: LinkedList<ResultHandler> =
         LinkedList<ResultHandler>().apply {
             add(ListenableFutureResultHandler())
-            add(FutureResultHandler())
             add(DeferredResultResultHandler())
+            add(AsyncResultHandler())
         }
     private val defaultResultHandler: DefaultResultHandler = DefaultResultHandler()
 
     @Pointcut("execution(public * (@org.springframework.web.bind.annotation.RestController *).*(..))")
     fun methodOfRestController() {}
 
-    @Pointcut("execution(public * (@net.bluewizardhat.common.logging.aspect.annotations.LogInvocation *).*(..))")
+    @Pointcut("execution(public * (@net.bluewizardhat.common.logging.aspect.annotations.LogCall *).*(..))")
     fun methodOfAnnotatedClass() {}
 
-    @Pointcut("execution(@net.bluewizardhat.common.logging.aspect.annotations.LogInvocation * *.*(..))")
+    @Pointcut("execution(@net.bluewizardhat.common.logging.aspect.annotations.LogCall * *.*(..))")
     fun annotatedMethod() {}
 
     fun registerResultHandler(resultHandler: ResultHandler) = resultHandlers.addFirst(resultHandler)
@@ -53,9 +54,9 @@ class LoggingAspect {
         val method = methodSignature.method
         val logger = LoggerFactory.getLogger(method.declaringClass)
 
-        val annotation: LogInvocation = method.getAnnotation(LogInvocation::class.java)
-            ?: method.declaringClass.getAnnotation(LogInvocation::class.java)
-            ?: LogInvocationDefaults::class.java.getAnnotation(LogInvocation::class.java)
+        val annotation: LogCall = method.getAnnotation(LogCall::class.java)
+            ?: method.declaringClass.getAnnotation(LogCall::class.java)
+            ?: LogInvocationDefaults::class.java.getAnnotation(LogCall::class.java)
 
         val log = LogWrapper(logger, annotation)
 
@@ -86,14 +87,16 @@ class LoggingAspect {
         val paramNames: Array<String>? = methodSignature.parameterNames
 
         for (i in args.indices) {
-            if (result.isNotEmpty()) result.append(",")
+            val hideValue = parameters[i].getAnnotation(HideValue::class.java) != null
             val sensitive = parameters[i].getAnnotation(Sensitive::class.java) != null
+            if (result.isNotEmpty()) result.append(",")
             if (paramNames != null && paramNames.size > i) {
                 result.append(paramNames[i]).append("=")
             }
             args[i].let {
                 when {
                     it == null -> result.append("<null>")
+                    hideValue -> result.append("<").append(it.javaClass.simpleName).append(">")
                     sensitive -> result.append("<hidden>")
                     else -> result.append("'").append(it.toString()).append("'")
                 }

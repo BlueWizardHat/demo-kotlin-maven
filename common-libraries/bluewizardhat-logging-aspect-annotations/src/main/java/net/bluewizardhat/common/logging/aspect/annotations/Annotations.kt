@@ -9,12 +9,20 @@ package net.bluewizardhat.common.logging.aspect.annotations
 annotation class Sensitive
 
 /**
+ * Log only the type of the parameter value, but not the actual value.
+ */
+@MustBeDocumented
+@Retention(AnnotationRetention.RUNTIME)
+@Target(AnnotationTarget.VALUE_PARAMETER)
+annotation class HideValue
+
+/**
  * Annotation to make the logging aspect log entry and exit of methods. When put on a class applies to all public methods
  * of that class. When put both a class and a method in the same class the values for the method takes priority.
  */
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
-annotation class LogInvocation(
+annotation class LogCall(
     /**
      * Normal messages (Entering, Exiting, etc.) are logged at this level. Default is INFO.
      */

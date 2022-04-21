@@ -6,8 +6,7 @@ import org.springframework.web.context.request.async.DeferredResult
 class DeferredResultResultHandler : ResultHandler() {
     override fun canHandle(result: Any): Boolean = result is DeferredResult<*>
 
-    override fun handleInternal(log: LogWrapper, methodName: String, millis: Long, result: Any): Any {
+    override fun handleInternal(log: LogWrapper, methodName: String, millis: Long, result: Any) {
         log.log("<- Exiting {} async with Spring DeferredResult - processing may continue in another thread", methodName)
-        return result
     }
 }

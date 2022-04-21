@@ -6,8 +6,7 @@ import org.springframework.util.concurrent.ListenableFuture
 class ListenableFutureResultHandler : ResultHandler() {
     override fun canHandle(result: Any): Boolean = result is ListenableFuture<*>
 
-    override fun handleInternal(log: LogWrapper, methodName: String, millis: Long, result: Any): Any {
+    override fun handleInternal(log: LogWrapper, methodName: String, millis: Long, result: Any) {
         log.log("<- Exiting {} async with Spring ListenableFuture - processing may continue in another thread", methodName)
-        return result
     }
 }

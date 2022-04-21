@@ -8,6 +8,7 @@ import net.bluewizardhat.common.cache.SimpleRedisCacheWeb.NoCacheDirectives.MaxA
 import net.bluewizardhat.common.cache.SimpleRedisCacheWeb.NoCacheDirectives.MustRevalidate
 import net.bluewizardhat.common.cache.SimpleRedisCacheWeb.NoCacheDirectives.NoCache
 import net.bluewizardhat.common.cache.SimpleRedisCacheWeb.NoCacheDirectives.NoStore
+import net.bluewizardhat.common.logging.aspect.annotations.HideValue
 import net.bluewizardhat.demoapp.template.api.Account
 import net.bluewizardhat.demoapp.template.api.AccountRequest
 import net.bluewizardhat.demoapp.template.api.Page
@@ -47,14 +48,14 @@ class AccountController(
     fun findAccounts(
         @RequestParam(required = false, defaultValue = "0") @Min(0) page: Int,
         @RequestParam(required = false, defaultValue = "10") @Min(5) @Max(100) pageSize: Int,
-        response: HttpServletResponse
+        @HideValue response: HttpServletResponse
     ): Page<Account> {
         accountCache.cacheControl(response, NoCache, NoStore, MaxAge0, MustRevalidate)
         return accountService.findAccounts(page, pageSize)
     }
 
     @GetMapping(path = ["/{id}"])
-    fun getAccountById(@PathVariable("id") id: UUID, response: HttpServletResponse): Account {
+    fun getAccountById(@PathVariable("id") id: UUID, @HideValue response: HttpServletResponse): Account {
         // It is obviously overkill to cache single entities from the database like I am doing here,
         // but it provides an example of how the redis cache can be used.
         return accountCache

@@ -1,17 +1,17 @@
 package net.bluewizardhat.common.logging.aspect
 
-import net.bluewizardhat.common.logging.aspect.annotations.LogInvocation
-import net.bluewizardhat.common.logging.aspect.annotations.LogInvocation.ExceptionLogLevel.ERROR
-import net.bluewizardhat.common.logging.aspect.annotations.LogInvocation.ExceptionLogLevel.WARN
-import net.bluewizardhat.common.logging.aspect.annotations.LogInvocation.LogLevel.DEBUG
-import net.bluewizardhat.common.logging.aspect.annotations.LogInvocation.LogLevel.INFO
-import net.bluewizardhat.common.logging.aspect.annotations.LogInvocation.LogLevel.TRACE
+import net.bluewizardhat.common.logging.aspect.annotations.LogCall
+import net.bluewizardhat.common.logging.aspect.annotations.LogCall.ExceptionLogLevel.ERROR
+import net.bluewizardhat.common.logging.aspect.annotations.LogCall.ExceptionLogLevel.WARN
+import net.bluewizardhat.common.logging.aspect.annotations.LogCall.LogLevel.DEBUG
+import net.bluewizardhat.common.logging.aspect.annotations.LogCall.LogLevel.INFO
+import net.bluewizardhat.common.logging.aspect.annotations.LogCall.LogLevel.TRACE
 import org.slf4j.Logger
 import java.util.function.Supplier
 
 class LogWrapper(
     private val logger: Logger,
-    private val annotation: LogInvocation
+    private val annotation: LogCall
 ) {
 
     fun log(msg: String, first: String, args: Supplier<String>) {
