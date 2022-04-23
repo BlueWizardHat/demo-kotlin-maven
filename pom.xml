@@ -32,6 +32,7 @@
 		<kotlin-logging.version>2.1.21</kotlin-logging.version>
 		<mockito-kotlin.version>4.0.0</mockito-kotlin.version>
 		<openfeign.version>11.8</openfeign.version>
+		<junit-platform-launcher.version>1.8.2</junit-platform-launcher.version>
 	</properties>
 
 	<!-- Dependencies that all projects get -->
@@ -89,6 +90,11 @@
 				<artifactId>mockito-kotlin</artifactId>
 				<version>${mockito-kotlin.version}</version>
 				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.junit.platform</groupId>
+				<artifactId>junit-platform-launcher</artifactId>
+				<version>${junit-platform-launcher.version}</version>
 			</dependency>
 
 			<dependency>
