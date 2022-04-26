@@ -10,10 +10,9 @@ import org.slf4j.Logger
 import java.util.function.Supplier
 
 class LogWrapper(
-    private val logger: Logger,
+    val logger: Logger,
     private val annotation: LogCall
 ) {
-
     fun log(msg: String, first: String, args: Supplier<String>) {
         when (annotation.logLevel) {
             TRACE -> if (logger.isTraceEnabled) { logger.trace(msg, first, args.get()) }
@@ -30,7 +29,13 @@ class LogWrapper(
         }
     }
 
-    fun logErrorReturn(methodName: String, millis: Long, thr: Throwable) {
+    fun logNormalReturn(methodName: String, startTime: Long, value: Any?) {
+        val millis = System.currentTimeMillis() - startTime
+        log("<- Exiting $methodName after $millis ms with ${value?.javaClass?.simpleName ?: "<null>"}")
+    }
+
+    fun logErrorReturn(methodName: String, startTime: Long, thr: Throwable) {
+        val millis = System.currentTimeMillis() - startTime
         val (thrMsg, chain) = describeThrowable(thr)
 
         val args: Array<*> =

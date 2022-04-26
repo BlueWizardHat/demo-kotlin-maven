@@ -3,10 +3,10 @@ package net.bluewizardhat.common.logging.aspect
 import net.bluewizardhat.common.logging.aspect.annotations.HideValue
 import net.bluewizardhat.common.logging.aspect.annotations.LogCall
 import net.bluewizardhat.common.logging.aspect.annotations.Sensitive
-import net.bluewizardhat.common.logging.aspect.resulthandling.AsyncResultHandler
 import net.bluewizardhat.common.logging.aspect.resulthandling.DefaultResultHandler
 import net.bluewizardhat.common.logging.aspect.resulthandling.DeferredResultResultHandler
 import net.bluewizardhat.common.logging.aspect.resulthandling.ListenableFutureResultHandler
+import net.bluewizardhat.common.logging.aspect.resulthandling.NonInterceptableAsyncResultHandler
 import net.bluewizardhat.common.logging.aspect.resulthandling.ResultHandler
 import org.aspectj.lang.ProceedingJoinPoint
 import org.aspectj.lang.annotation.Around
@@ -31,7 +31,7 @@ class LoggingAspect {
         LinkedList<ResultHandler>().apply {
             add(ListenableFutureResultHandler())
             add(DeferredResultResultHandler())
-            add(AsyncResultHandler())
+            add(NonInterceptableAsyncResultHandler())
         }
     private val defaultResultHandler: DefaultResultHandler = DefaultResultHandler()
 
@@ -68,10 +68,9 @@ class LoggingAspect {
             }
 
             val result: Any? = jp.proceed()
-            val millis = System.currentTimeMillis() - startTime
 
-            return result?.let { resultHandlers.find { it.canHandle(result) }?.handle(log, method.name, millis, result) }
-                ?: defaultResultHandler.handle(log, method.name, millis, result)
+            return result?.let { resultHandlers.find { it.canHandle(result) }?.handle(log, method.name, startTime, result) }
+                ?: defaultResultHandler.handle(log, method.name, startTime, result)
         } catch (thr: Throwable) {
             log.logErrorReturn(method.name, System.currentTimeMillis() - startTime, thr)
             throw thr

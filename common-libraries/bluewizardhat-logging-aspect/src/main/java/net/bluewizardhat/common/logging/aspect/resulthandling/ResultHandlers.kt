@@ -5,13 +5,13 @@ import net.bluewizardhat.common.logging.aspect.LogWrapper
 
 abstract class ResultHandler {
     abstract fun canHandle(result: Any): Boolean
-    protected abstract fun handleInternal(log: LogWrapper, methodName: String, millis: Long, result: Any)
+    protected abstract fun handleInternal(log: LogWrapper, methodName: String, startTime: Long, result: Any): Any
 
-    fun handle(log: LogWrapper, methodName: String, millis: Long, result: Any): Any {
+    fun handle(log: LogWrapper, methodName: String, startTime: Long, result: Any): Any {
         try {
-            handleInternal(log, methodName, millis, result)
+            return handleInternal(log, methodName, startTime, result)
         } catch (thr: Throwable) {
-            // log.error("", thr)
+            log.logger.warn("Unable to handle ${result.javaClass.name}", thr)
         }
         return result
     }
@@ -21,16 +21,16 @@ abstract class ResultHandler {
  * Default that handles all unknown types and null.
  */
 class DefaultResultHandler {
-    fun handle(log: LogWrapper, methodName: String, millis: Long, result: Any?): Any? {
-        log.log("<- Exiting $methodName after $millis ms with ${result?.javaClass?.simpleName ?: "<null>"}")
+    fun handle(log: LogWrapper, methodName: String, startTime: Long, result: Any?): Any? {
+        log.logNormalReturn(methodName, startTime, result)
         return result
     }
 }
 
 /**
- * Handles async return types we recognize that we cannot patch for a reliable time measurement.
+ * Handles async return types we recognize that we cannot intercept for a reliable time measurement.
  */
-class AsyncResultHandler : ResultHandler() {
+class NonInterceptableAsyncResultHandler : ResultHandler() {
     private val log = KotlinLogging.logger {}
     private val asyncTypes: List<Class<*>> = sequenceOf(
         "java.util.concurrent.Future",
@@ -54,7 +54,8 @@ class AsyncResultHandler : ResultHandler() {
         return asyncTypes.firstOrNull { it.isAssignableFrom(resultClass) } != null
     }
 
-    override fun handleInternal(log: LogWrapper, methodName: String, millis: Long, result: Any) {
-        log.log("<- Exiting $methodName async with ${result.javaClass.simpleName} after $millis ms - processing may continue in another thread")
+    override fun handleInternal(log: LogWrapper, methodName: String, startTime: Long, result: Any): Any {
+        log.log("<- Exiting {} async with {} - processing may continue in another thread", methodName, result.javaClass.simpleName)
+        return result
     }
 }
