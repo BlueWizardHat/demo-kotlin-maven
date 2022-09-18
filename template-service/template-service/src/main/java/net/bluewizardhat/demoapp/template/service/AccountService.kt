@@ -19,7 +19,7 @@ import net.bluewizardhat.demoapp.template.database.entity.Account as AccountEnti
 
 @Component
 class AccountService(
-    private val accountRepository: AccountRepository,
+    private val accountRepository: AccountRepository
 ) : AccountOperations {
     private val log = KotlinLogging.logger {}
 

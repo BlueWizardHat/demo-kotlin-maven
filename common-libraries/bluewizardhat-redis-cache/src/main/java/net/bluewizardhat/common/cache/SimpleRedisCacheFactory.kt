@@ -57,7 +57,7 @@ sealed class SimpleRedisCacheFactory(
  */
 class SimpleRedisCacheFactoryBasic(
     defaultExecutor: Supplier<Executor>,
-    private val redisAdapter: RedisAdapter,
+    private val redisAdapter: RedisAdapter
 ) : SimpleRedisCacheFactory(defaultExecutor) {
     override fun forPool(pool: String, lockDuration: Duration, objectMapper: ObjectMapper, executor: Executor): SimpleRedisCache =
         SimpleRedisCacheBasic(redisAdapter, objectMapper, pool, lockDuration, executor)
@@ -68,7 +68,7 @@ class SimpleRedisCacheFactoryBasic(
  */
 class SimpleRedisCacheFactoryWeb(
     defaultExecutor: Supplier<Executor>,
-    private val redisAdapter: RedisAdapter,
+    private val redisAdapter: RedisAdapter
 ) : SimpleRedisCacheFactory(defaultExecutor) {
     /**
      * Creates a SimpleRedisCacheWeb for a pool. A pool is basically a prefix to group all keys in the cache on.

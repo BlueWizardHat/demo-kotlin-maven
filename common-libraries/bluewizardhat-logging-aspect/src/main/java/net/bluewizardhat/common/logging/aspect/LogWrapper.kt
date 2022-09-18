@@ -39,10 +39,11 @@ class LogWrapper(
         val (thrMsg, chain) = describeThrowable(thr)
 
         val args: Array<*> =
-            if (annotation.logStacktraces)
+            if (annotation.logStacktraces) {
                 arrayOf(methodName, millis, chain, thrMsg, thr)
-            else
+            } else {
                 arrayOf(methodName, millis, chain, thrMsg)
+            }
 
         when (annotation.exceptionLogLevel) {
             ERROR -> logger.error("<- Exiting {} (after {} ms) with {}: '{}'", *args)

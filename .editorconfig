@@ -27,3 +27,7 @@ indent_size = 4
 
 [*.{bat,cmd}]
 end_of_line = crlf
+
+# ktlint config
+[*.{kt,kts}]
+disabled_rules = annotation

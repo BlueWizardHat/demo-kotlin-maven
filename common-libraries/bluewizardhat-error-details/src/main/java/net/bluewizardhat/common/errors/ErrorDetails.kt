@@ -41,7 +41,7 @@ data class CodeErrorDetails @JsonCreator constructor(
 data class MessageErrorDetails @JsonCreator constructor(
     override val errorCode: String,
     override val message: String,
-    override val timestamp: OffsetDateTime = nowInUtc(),
+    override val timestamp: OffsetDateTime = nowInUtc()
 ) : ErrorDetails()
 
 /**

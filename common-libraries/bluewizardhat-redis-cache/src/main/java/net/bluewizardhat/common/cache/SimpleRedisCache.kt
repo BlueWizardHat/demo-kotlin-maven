@@ -279,15 +279,20 @@ class SimpleRedisCacheWeb(
     enum class NoCacheDirectives(val value: String) {
         /** Adds the "no-cache" directive */
         NoCache("no-cache"),
+
         /** Adds the "no-store" directive */
         NoStore("no-store"),
+
         /** Adds the "max-age" directive with a value of 0 */
         MaxAge0("max-age=0"),
+
         /** Adds the "s-maxage" directive with a value of 0 */
         SMaxAge0("s-maxage=0"),
+
         /** Adds the "must-revalidate" directive */
         MustRevalidate("must-revalidate")
     }
+
     /**
      * https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control
      */
@@ -296,62 +301,75 @@ class SimpleRedisCacheWeb(
         MaxAgeExpireAfter {
             override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) = "max-age=$expireAfter"
         },
+
         /** Adds the "max-age" directive with a value of expireAfter minus age of the cached object */
         MaxAgeExpireAfterAged {
             override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) = "max-age=${expireAfter - age}"
         },
+
         /** Adds the "max-age" directive with a value of refreshAfter */
         MaxAgeRefreshAfter {
             override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) =
                 refreshAfter?.let { "max-age=$refreshAfter" }
                     ?: throw IllegalArgumentException("When using MaxAgeRefreshAfter refreshAfter cannot be null")
         },
+
         /** Adds the "max-age" directive with a value of refreshAfter minus age of the cached object */
         MaxAgeRefreshAfterAged {
             override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) =
                 refreshAfter?.let { "max-age=${it - age}" }
                     ?: throw IllegalArgumentException("When using MaxAgeRefreshAfterAged refreshAfter cannot be null")
         },
+
         /** Adds the "s-maxage" directive with a value of expireAfter */
         SMaxAgeExpireAfter {
             override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) = "s-maxage=$expireAfter"
         },
+
         /** Adds the "s-maxage" directive with a value of expireAfter minus age of the cached object */
         SMaxAgeExpireAfterAged {
             override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) = "s-maxage=${expireAfter - age}"
         },
+
         /** Adds the "s-maxage" directive with a value of refreshAfter */
         SMaxAgeRefreshAfter {
             override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) =
                 refreshAfter?.let { "s-maxage=$refreshAfter" }
                     ?: throw IllegalArgumentException("When using SMaxAgeRefreshAfter refreshAfter cannot be null")
         },
+
         /** Adds the "s-maxage" directive with a value of refreshAfter minus age of the cached object */
         SMaxAgeRefreshAfterAged {
             override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) =
                 refreshAfter?.let { "s-maxage=${it - age}" }
                     ?: throw IllegalArgumentException("When using SMaxAgeRefreshAfterAged refreshAfter cannot be null")
         },
+
         /** Adds the "must-revalidate" directive */
         MustRevalidate {
             override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) = "must-revalidate"
         },
+
         /** Adds the "proxy-revalidate" directive */
         ProxyRevalidate {
             override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) = "proxy-revalidate"
         },
+
         /** Adds the "private" directive */
         Private {
             override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) = "private"
         },
+
         /** Adds the "public" directive */
         Public {
             override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) = "public"
         },
+
         /** Adds the "no-transform" directive */
         NoTransform {
             override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) = "no-transform"
         },
+
         /** Adds the "immutable" directive */
         Immutable {
             override fun value(expireAfter: Long, age: Long, refreshAfter: Long?) = "immutable"

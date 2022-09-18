@@ -5,7 +5,7 @@ import org.springframework.data.redis.core.StringRedisTemplate
 import java.time.Duration
 
 class SpringRedisAdapter(
-    private val redisTemplate: StringRedisTemplate,
+    private val redisTemplate: StringRedisTemplate
 ) : RedisAdapter {
     private val valueOperations = redisTemplate.opsForValue()
 
