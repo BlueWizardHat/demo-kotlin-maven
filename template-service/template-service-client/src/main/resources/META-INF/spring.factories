@@ -1,1 +1,0 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=net.bluewizardhat.demoapp.template.client.TemplateServiceClientConfiguration

@@ -1,9 +1,9 @@
 package net.bluewizardhat.demoapp.template.api
 
+import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.Size
 import java.time.OffsetDateTime
 import java.util.UUID
-import javax.validation.constraints.NotBlank
-import javax.validation.constraints.Size
 
 /**
  * Request to create or update an Account.

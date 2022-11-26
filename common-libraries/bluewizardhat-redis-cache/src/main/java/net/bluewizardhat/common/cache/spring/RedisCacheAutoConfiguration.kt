@@ -30,14 +30,14 @@ class RedisCacheAutoConfiguration(
     private var defaultExecutor: ThreadPoolTaskExecutor? = null
 
     @Bean
-    @ConditionalOnMissingClass(value = ["javax.servlet.http.HttpServletResponse"])
+    @ConditionalOnMissingClass(value = ["jakarta.servlet.http.HttpServletResponse"])
     fun simpleRedisCacheFactory(): SimpleRedisCacheFactory {
         log.info("Creating SimpleRedisCacheFactory (Non-Web)")
         return SimpleRedisCacheFactoryBasic(this::defaultExecutor, SpringRedisAdapter(redisTemplate))
     }
 
     @Bean
-    @ConditionalOnClass(name = ["javax.servlet.http.HttpServletResponse"])
+    @ConditionalOnClass(name = ["jakarta.servlet.http.HttpServletResponse"])
     fun simpleRedisCacheFactoryWeb(): SimpleRedisCacheFactoryWeb {
         log.info("Creating SimpleRedisCacheFactoryWeb")
         return SimpleRedisCacheFactoryWeb(this::defaultExecutor, SpringRedisAdapter(redisTemplate))

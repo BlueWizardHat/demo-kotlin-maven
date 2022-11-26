@@ -7,12 +7,14 @@ spring:
       probability: 0.0
   datasource.driver-class-name: org.postgresql.Driver
   jpa:
-    database-platform: org.hibernate.dialect.PostgreSQL10Dialect
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate.ddl-auto: validate
 
   cache.type: redis
   data:
     redis:
+      host: ${SPRING_REDIS_HOST}
+      port: ${SPRING_REDIS_PORT}
       repositories:
         enabled: false
 

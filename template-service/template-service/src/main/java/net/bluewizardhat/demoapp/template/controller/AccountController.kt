@@ -1,6 +1,11 @@
 package net.bluewizardhat.demoapp.template.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import jakarta.servlet.http.HttpServletResponse
+import jakarta.transaction.Transactional
+import jakarta.validation.Valid
+import jakarta.validation.constraints.Max
+import jakarta.validation.constraints.Min
 import mu.KotlinLogging
 import net.bluewizardhat.common.cache.SimpleRedisCacheFactoryWeb
 import net.bluewizardhat.common.cache.SimpleRedisCacheWeb.CacheDirectives.MaxAgeExpireAfter
@@ -27,11 +32,6 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import java.time.Duration
 import java.util.UUID
-import javax.servlet.http.HttpServletResponse
-import javax.transaction.Transactional
-import javax.validation.Valid
-import javax.validation.constraints.Max
-import javax.validation.constraints.Min
 
 @Validated
 @RestController
@@ -73,9 +73,9 @@ class AccountController(
 
     @Transactional
     @PatchMapping(path = ["/{id}"])
-    fun updateExistingAccount(@PathVariable("id") id: UUID, @Valid @RequestBody request: AccountRequest): Int {
+    fun updateExistingAccount(@PathVariable("id") id: UUID, @Valid @RequestBody request: AccountRequest) {
         accountCache.invalidate(id.toString())
-        return accountService.updateExistingAccount(id, request)
+        accountService.updateExistingAccount(id, request)
     }
 
     @Profile("local")

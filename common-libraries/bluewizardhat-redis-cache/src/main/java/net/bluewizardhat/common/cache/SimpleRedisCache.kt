@@ -2,13 +2,13 @@ package net.bluewizardhat.common.cache
 
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
+import jakarta.servlet.http.HttpServletResponse
 import mu.KotlinLogging
 import java.time.Duration
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.Executor
 import java.util.function.Supplier
-import javax.servlet.http.HttpServletResponse
 
 /**
  * A simple redis cache implementation.

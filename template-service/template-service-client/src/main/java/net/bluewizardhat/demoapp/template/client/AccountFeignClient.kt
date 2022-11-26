@@ -52,7 +52,7 @@ class AccountFeignClient(
 
             @RequestLine("PATCH $urlPrefix/{id}")
             @Headers("Content-Type: application/json")
-            override fun updateExistingAccount(@Param("id") id: UUID, request: AccountRequest): Int
+            override fun updateExistingAccount(@Param("id") id: UUID, request: AccountRequest)
         }
     }
 
@@ -79,6 +79,6 @@ class AccountFeignClient(
     override fun saveNewAccount(request: AccountRequest): Account =
         feignClient.saveNewAccount(request)
 
-    override fun updateExistingAccount(id: UUID, request: AccountRequest): Int =
+    override fun updateExistingAccount(id: UUID, request: AccountRequest) =
         feignClient.updateExistingAccount(id, request)
 }
