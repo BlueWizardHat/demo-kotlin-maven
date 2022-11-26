@@ -30,4 +30,4 @@ end_of_line = crlf
 
 # ktlint config
 [*.{kt,kts}]
-disabled_rules = annotation
+ktlint_disabled_rules = annotation
