@@ -18,6 +18,7 @@ class ListenableFutureResultHandler : ResultHandler() {
                 }
                 return wasCancelled
             }
+            override fun isCancelled(): Boolean = actualResult.isCancelled
         }
 
         actualResult.addCallback(

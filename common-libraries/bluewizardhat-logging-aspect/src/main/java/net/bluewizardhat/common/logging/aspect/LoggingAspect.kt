@@ -3,6 +3,7 @@ package net.bluewizardhat.common.logging.aspect
 import net.bluewizardhat.common.logging.aspect.annotations.HideValue
 import net.bluewizardhat.common.logging.aspect.annotations.LogCall
 import net.bluewizardhat.common.logging.aspect.annotations.Sensitive
+import net.bluewizardhat.common.logging.aspect.resulthandling.CompletableFutureResultHandler
 import net.bluewizardhat.common.logging.aspect.resulthandling.DefaultResultHandler
 import net.bluewizardhat.common.logging.aspect.resulthandling.DeferredResultResultHandler
 import net.bluewizardhat.common.logging.aspect.resulthandling.ListenableFutureResultHandler
@@ -29,6 +30,7 @@ class LoggingAspect {
 
     private val resultHandlers: LinkedList<ResultHandler> =
         LinkedList<ResultHandler>().apply {
+            add(CompletableFutureResultHandler())
             add(ListenableFutureResultHandler())
             add(DeferredResultResultHandler())
             add(NonInterceptableAsyncResultHandler())
