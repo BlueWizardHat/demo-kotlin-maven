@@ -28,11 +28,9 @@
 		<targetJdk>17</targetJdk>
 		<java.version>17</java.version>
 		<kotlin.version>1.7.21</kotlin.version>
-		<junit.version>5.9.0</junit.version>
-		<kotlin-logging.version>2.1.23</kotlin-logging.version>
+		<kotlin-logging.version>3.0.4</kotlin-logging.version>
 		<mockito-kotlin.version>4.0.0</mockito-kotlin.version>
-		<openfeign.version>11.9.1</openfeign.version>
-		<junit-platform-launcher.version>1.9.0</junit-platform-launcher.version>
+		<openfeign.version>12.1</openfeign.version>
 	</properties>
 
 	<!-- Dependencies that all projects get -->
@@ -74,13 +72,6 @@
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
-				<groupId>org.junit</groupId>
-				<artifactId>junit-bom</artifactId>
-				<version>${junit.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-			<dependency>
 				<groupId>io.github.microutils</groupId>
 				<artifactId>kotlin-logging-jvm</artifactId>
 				<version>${kotlin-logging.version}</version>
@@ -91,13 +82,6 @@
 				<version>${mockito-kotlin.version}</version>
 				<scope>test</scope>
 			</dependency>
-			<!--
-			<dependency>
-				<groupId>org.junit.platform</groupId>
-				<artifactId>junit-platform-launcher</artifactId>
-				<version>${junit-platform-launcher.version}</version>
-			</dependency>
-			-->
 
 			<dependency>
 				<groupId>io.github.openfeign</groupId>
@@ -114,24 +98,6 @@
 				<artifactId>feign-slf4j</artifactId>
 				<version>${openfeign.version}</version>
 			</dependency>
-
-			<!-- Solving convergence errors: Start -->
-			<dependency>
-				<groupId>org.jetbrains</groupId>
-				<artifactId>annotations</artifactId>
-				<version>21.0.1</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jboss.logging</groupId>
-				<artifactId>jboss-logging-processor</artifactId>
-				<version>2.2.1.Final</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jboss.logging</groupId>
-				<artifactId>jboss-logging-annotations</artifactId>
-				<version>2.2.1.Final</version>
-			</dependency>
-			<!-- Solving convergence errors: End-->
 		</dependencies>
 
 	</dependencyManagement>
@@ -226,7 +192,7 @@
 				<plugin>
 					<groupId>com.github.gantsign.maven</groupId>
 					<artifactId>ktlint-maven-plugin</artifactId>
-					<version>1.15.1</version>
+					<version>1.15.2</version>
 					<configuration>
 						<sourceRoots>${project.build.sourceDirectory}</sourceRoots>
 					</configuration>
@@ -371,7 +337,7 @@
 				<plugin>
 					<groupId>org.owasp</groupId>
 					<artifactId>dependency-check-maven</artifactId>
-					<version>7.2.0</version>
+					<version>7.3.2</version>
 					<executions>
 						<execution>
 							<goals>
