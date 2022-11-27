@@ -2,7 +2,6 @@ package net.bluewizardhat.demoapp.template.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.servlet.http.HttpServletResponse
-import jakarta.transaction.Transactional
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.Min
@@ -71,7 +70,6 @@ class AccountController(
         return accountService.saveNewAccount(request)
     }
 
-    @Transactional
     @PatchMapping(path = ["/{id}"])
     fun updateExistingAccount(@PathVariable("id") id: UUID, @Valid @RequestBody request: AccountRequest) {
         accountCache.invalidate(id.toString())

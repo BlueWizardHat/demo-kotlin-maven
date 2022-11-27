@@ -32,7 +32,7 @@ class ListenableFutureResultHandler : ResultHandler() {
             }
         )
 
-        log.logger.debug("<- Exiting {} async with Spring ListenableFuture - processing may continue in another thread", methodName)
+        log.logger.trace("<- Exiting {} async with Spring ListenableFuture - processing may continue in another thread", methodName)
         return loggingResult
     }
 }

@@ -30,7 +30,7 @@ class CompletableFutureResultHandler : ResultHandler() {
             }
         }
 
-        log.logger.debug("<- Exiting {} async with CompletableFuture - processing may continue in another thread", methodName)
+        log.logger.trace("<- Exiting {} async with CompletableFuture - processing may continue in another thread", methodName)
         return loggingResult
     }
 }
