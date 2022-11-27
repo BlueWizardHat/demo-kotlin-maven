@@ -2,8 +2,9 @@ package net.bluewizardhat.common.logging.aspect.resulthandling
 
 import mu.KotlinLogging
 import net.bluewizardhat.common.logging.aspect.LogWrapper
+import java.util.concurrent.CompletableFuture
 
-abstract class ResultHandler {
+sealed class ResultHandler {
     abstract fun canHandle(result: Any): Boolean
     protected abstract fun handleInternal(log: LogWrapper, methodName: String, startTime: Long, result: Any): Any
 
@@ -57,5 +58,27 @@ class NonInterceptableAsyncResultHandler : ResultHandler() {
     override fun handleInternal(log: LogWrapper, methodName: String, startTime: Long, result: Any): Any {
         log.log("<- Exiting {} async with {} - processing may continue in another thread", methodName, result.javaClass.simpleName)
         return result
+    }
+}
+
+/**
+ * Handles CompletableFuture return types.
+ */
+object CompletableFutureResultHandler : ResultHandler() {
+    override fun canHandle(result: Any): Boolean = result is CompletableFuture<*>
+
+    override fun handleInternal(log: LogWrapper, methodName: String, startTime: Long, result: Any): Any {
+        val actualResult = result as CompletableFuture<*>
+
+        actualResult.handle { value: Any, throwable: Throwable? ->
+            if (throwable != null) {
+                log.logErrorReturn(methodName, startTime, throwable)
+            } else {
+                log.logNormalReturn(methodName, startTime, value)
+            }
+        }
+
+        log.logger.trace("<- Exiting {} async with CompletableFuture - processing may continue in another thread", methodName)
+        return actualResult
     }
 }

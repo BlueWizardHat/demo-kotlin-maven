@@ -64,13 +64,8 @@ class AccountService(
     @LogCall
     @Transactional
     fun getAccountByIdAsync(id: UUID): CompletableFuture<Account> {
-        log.debug { "Fetching account '$id' from database" }
         Thread.sleep(500)
-        return CompletableFuture.completedFuture(
-            accountRepository
-                .findById(id)
-                .map(AccountMapper::dbToApi)
-                .orElseThrow { CommonErrors.entityNotFound("Account", id.toString()) }
-        )
+        // throw IllegalArgumentException("blah")
+        return CompletableFuture.completedFuture(getAccountById(id))
     }
 }
