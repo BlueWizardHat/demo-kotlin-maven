@@ -21,6 +21,7 @@
 		<module>bluewizardhat-error-details</module>
 		<module>bluewizardhat-exception-handlers</module>
 		<module>bluewizardhat-redis-cache</module>
+		<module>bluewizardhat-statemachine</module>
 	</modules>
 
 	<properties>
