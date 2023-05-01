@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.0.0</version>
+		<version>3.0.6</version>
 		<relativePath/>
 	</parent>
 
@@ -27,10 +27,10 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<targetJdk>17</targetJdk>
 		<java.version>17</java.version>
-		<kotlin.version>1.7.21</kotlin.version>
-		<kotlin-logging.version>3.0.4</kotlin-logging.version>
-		<mockito-kotlin.version>4.0.0</mockito-kotlin.version>
-		<openfeign.version>12.1</openfeign.version>
+		<kotlin.version>1.8.20</kotlin.version>
+		<kotlin-logging.version>3.0.5</kotlin-logging.version>
+		<mockito-kotlin.version>4.1.0</mockito-kotlin.version>
+		<openfeign.version>12.3</openfeign.version>
 	</properties>
 
 	<!-- Dependencies that all projects get -->
