@@ -19,7 +19,7 @@ services:
   # Database
   #
   postgresql-server:
-    image: postgres:14-alpine
+    image: postgres:15-alpine
     container_name: demoapp-postgresql-server
     ports:
       - "5432:5432"
@@ -34,7 +34,7 @@ services:
   # Redis
   #
   redis-server:
-    image: redis:6-alpine
+    image: redis:7-alpine
     container_name: demoapp-redis-server
     ports:
       - "6379:6379"
