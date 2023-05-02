@@ -30,4 +30,6 @@ end_of_line = crlf
 
 # ktlint config
 [*.{kt,kts}]
-ktlint_disabled_rules = annotation
+ktlint_standard_annotation = disabled
+ktlint_standard_trailing-comma-on-call-site = disabled
+ktlint_standard_trailing-comma-on-declaration-site = disabled
