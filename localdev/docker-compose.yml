@@ -64,7 +64,7 @@ services:
   # If you make any changes to this file remember to run "./runLocal.sh refresh".
   #
   template-service:
-    image: eclipse-temurin:17-jre-alpine
+    image: eclipse-temurin:21-jre-alpine
     container_name: demoapp-template-service
     command: sh /setup/run-jar template-service.jar postgresql-server:5432 redis-server:6379
     ports:
