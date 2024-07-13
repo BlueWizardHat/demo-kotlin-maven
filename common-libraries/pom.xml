@@ -16,6 +16,7 @@
 	<description>Common Libraries - Parent POM</description>
 
 	<modules>
+		<module>bluewizardhat-virtual-threads</module>
 		<module>bluewizardhat-logging-aspect-annotations</module>
 		<module>bluewizardhat-logging-aspect</module>
 		<module>bluewizardhat-error-details</module>
