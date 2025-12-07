@@ -1,11 +1,11 @@
 package net.bluewizardhat.demoapp.template.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.Min
-import mu.KotlinLogging
 import net.bluewizardhat.common.cache.SimpleRedisCacheFactoryWeb
 import net.bluewizardhat.common.cache.SimpleRedisCacheWeb.CacheDirectives.MaxAgeExpireAfter
 import net.bluewizardhat.common.cache.SimpleRedisCacheWeb.NoCacheDirectives.MaxAge0

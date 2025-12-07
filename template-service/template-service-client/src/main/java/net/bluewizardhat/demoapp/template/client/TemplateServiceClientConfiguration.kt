@@ -2,7 +2,7 @@ package net.bluewizardhat.demoapp.template.client
 
 import feign.Client
 import feign.okhttp.OkHttpClient
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan

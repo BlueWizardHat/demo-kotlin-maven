@@ -1,6 +1,6 @@
 package net.bluewizardhat.common.logging.aspect.resulthandling
 
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import net.bluewizardhat.common.logging.aspect.LogWrapper
 import java.util.concurrent.CompletableFuture
 

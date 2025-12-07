@@ -1,6 +1,6 @@
 package net.bluewizardhat.common.cache.spring
 
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import net.bluewizardhat.common.cache.SimpleRedisCacheFactory
 import net.bluewizardhat.common.cache.SimpleRedisCacheFactoryBasic
 import net.bluewizardhat.common.cache.SimpleRedisCacheFactoryWeb

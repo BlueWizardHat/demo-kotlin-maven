@@ -1,8 +1,8 @@
 package net.bluewizardhat.demoapp.template.service
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.transaction.Transactional
 import jakarta.validation.Valid
-import mu.KotlinLogging
 import net.bluewizardhat.common.errors.CommonErrors
 import net.bluewizardhat.common.logging.aspect.annotations.LogCall
 import net.bluewizardhat.demoapp.template.api.Account

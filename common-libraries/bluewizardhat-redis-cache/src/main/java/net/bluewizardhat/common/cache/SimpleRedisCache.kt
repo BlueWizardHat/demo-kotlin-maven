@@ -2,8 +2,8 @@ package net.bluewizardhat.common.cache
 
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.http.HttpServletResponse
-import mu.KotlinLogging
 import java.time.Duration
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit

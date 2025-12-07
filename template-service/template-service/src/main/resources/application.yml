@@ -22,7 +22,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: "health,info"
+        include: "health,info,flyway"
   info:
     env.enabled: true
 

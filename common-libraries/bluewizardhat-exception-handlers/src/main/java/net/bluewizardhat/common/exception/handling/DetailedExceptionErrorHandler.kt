@@ -1,6 +1,6 @@
 package net.bluewizardhat.common.exception.handling
 
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import net.bluewizardhat.common.errors.DetailedException
 import net.bluewizardhat.common.errors.ErrorDetails
 import org.springframework.core.Ordered
