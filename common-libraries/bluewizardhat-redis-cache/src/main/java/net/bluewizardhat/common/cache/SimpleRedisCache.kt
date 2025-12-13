@@ -276,7 +276,9 @@ class SimpleRedisCacheWeb(
     /**
      * https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control
      */
-    enum class NoCacheDirectives(val value: String) {
+    enum class NoCacheDirectives(
+        val value: String
+    ) {
         /** Adds the "no-cache" directive */
         NoCache("no-cache"),
 

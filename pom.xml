@@ -192,7 +192,7 @@
 				<plugin>
 					<groupId>com.github.gantsign.maven</groupId>
 					<artifactId>ktlint-maven-plugin</artifactId>
-					<version>1.16.0</version>
+					<version>3.5.0</version>
 					<configuration>
 						<sourceRoots>${project.build.sourceDirectory}</sourceRoots>
 					</configuration>
@@ -222,12 +222,12 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
-					<version>3.0.0</version>
+					<version>3.5.4</version>
 				</plugin>
 				<plugin>
 					<groupId>io.github.git-commit-id</groupId>
 					<artifactId>git-commit-id-maven-plugin</artifactId>
-					<version>5.0.0</version>
+					<version>9.0.2</version>
 					<executions>
 						<execution>
 							<id>get-the-git-infos</id>
@@ -251,7 +251,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-source-plugin</artifactId>
-					<version>3.2.1</version>
+					<version>3.4.0</version>
 					<executions>
 						<execution>
 							<id>attach-sources</id>
@@ -275,7 +275,7 @@
 				<plugin>
 					<groupId>org.jacoco</groupId>
 					<artifactId>jacoco-maven-plugin</artifactId>
-					<version>0.8.10</version>
+					<version>0.8.14</version>
 					<executions>
 						<execution>
 							<id>jacoco-initialize</id>
@@ -309,7 +309,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-enforcer-plugin</artifactId>
-					<version>3.3.0</version>
+					<version>3.6.2</version>
 					<executions>
 						<execution>
 							<id>enforce</id>
@@ -337,7 +337,7 @@
 				<plugin>
 					<groupId>org.owasp</groupId>
 					<artifactId>dependency-check-maven</artifactId>
-					<version>8.2.1</version>
+					<version>12.1.9</version>
 					<executions>
 						<execution>
 							<goals>

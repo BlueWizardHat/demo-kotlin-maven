@@ -48,10 +48,13 @@ annotation class LogCall(
     val logStacktraces: Boolean = false
 ) {
     enum class LogLevel {
-        TRACE, DEBUG, INFO
+        TRACE,
+        DEBUG,
+        INFO
     }
 
     enum class ExceptionLogLevel {
-        WARN, ERROR
+        WARN,
+        ERROR
     }
 }

@@ -18,8 +18,10 @@ import java.util.concurrent.Executor
 class RedisCacheAutoConfiguration(
     @Value("\${bluewizardhat.common.simplerediscache.corePoolSize:0}")
     private val corePoolSize: Int,
+
     @Value("\${bluewizardhat.common.simplerediscache.maxPoolSize:10}")
     private val maxPoolSize: Int,
+
     @Value("\${bluewizardhat.common.simplerediscache.queueCapacity:20}")
     private val queueCapacity: Int,
 

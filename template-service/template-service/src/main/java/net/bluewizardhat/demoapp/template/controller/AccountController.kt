@@ -66,9 +66,8 @@ class AccountController(
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(path = ["/"])
-    fun saveNewAccount(@Valid @RequestBody request: AccountRequest): Account {
-        return accountService.saveNewAccount(request)
-    }
+    fun saveNewAccount(@Valid @RequestBody request: AccountRequest): Account =
+        accountService.saveNewAccount(request)
 
     @PatchMapping(path = ["/{id}"])
     fun updateExistingAccount(@PathVariable("id") id: UUID, @Valid @RequestBody request: AccountRequest) {

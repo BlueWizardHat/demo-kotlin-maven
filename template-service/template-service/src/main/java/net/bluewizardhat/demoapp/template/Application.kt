@@ -7,7 +7,6 @@ import org.springframework.scheduling.annotation.EnableAsync
 @SpringBootApplication
 @EnableAsync
 class Application {
-
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {

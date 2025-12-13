@@ -19,7 +19,6 @@ class AsyncAccountController(
     private val accountService: AccountService
 ) {
     @GetMapping(path = ["/{id}"])
-    fun getAccountById(@PathVariable("id") id: UUID, @HideValue response: HttpServletResponse): CompletableFuture<Account> {
-        return accountService.getAccountByIdAsync(id)
-    }
+    fun getAccountById(@PathVariable("id") id: UUID, @HideValue response: HttpServletResponse): CompletableFuture<Account> =
+        accountService.getAccountByIdAsync(id)
 }

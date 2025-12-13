@@ -29,11 +29,10 @@ class AccountService(
     private val log = KotlinLogging.logger {}
 
     @Transactional
-    override fun findAccounts(page: Int, pageSize: Int): Page<Account> {
-        return accountRepository
+    override fun findAccounts(page: Int, pageSize: Int): Page<Account> =
+        accountRepository
             .findAll(PageRequest.of(page, pageSize, AccountEntity.defaultSort))
             .toApiPage(AccountMapper::dbToApi)
-    }
 
     @Transactional
     override fun getAccountById(id: UUID): Account {
@@ -45,9 +44,8 @@ class AccountService(
     }
 
     @Transactional
-    override fun saveNewAccount(@Valid request: AccountRequest): Account {
-        return accountRepository.save(request.toEntity()).toApi()
-    }
+    override fun saveNewAccount(@Valid request: AccountRequest): Account =
+        accountRepository.save(request.toEntity()).toApi()
 
     @Transactional
     override fun updateExistingAccount(id: UUID, @Valid request: AccountRequest) {
