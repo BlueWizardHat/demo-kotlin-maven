@@ -42,7 +42,7 @@ class LogWrapper(
             if (annotation.logStacktraces) {
                 arrayOf(methodName, millis, chain, thrMsg, thr)
             } else {
-                arrayOf(methodName, millis, chain, thrMsg)
+                arrayOf<Any?>(methodName, millis, chain, thrMsg)
             }
 
         when (annotation.exceptionLogLevel) {
